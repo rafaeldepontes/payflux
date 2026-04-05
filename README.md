@@ -60,11 +60,11 @@ Key goals of the project:
        PostgreSQL (Ledger)
           |
           v
-          RabbitMQ (Events)
+      RabbitMQ (Events)
           |
           v
      Downstream Consumers
-     (Notifications, Risk, Analytics)
+    (Notifications, Risk, Analytics)
 
 Flow:
 
@@ -103,13 +103,14 @@ Creates a new payment transaction.
 
 Request:
 
+> Headers: ... | Idempotency-Key: "abc-123" | ....
+
 ``` json
 {
   "from_account": "user_wallet",
   "to_account": "merchant_wallet",
   "amount": 100,
   "currency": "USD",
-  "idempotency_key": "abc-123"
 }
 ```
 
@@ -236,7 +237,7 @@ Requirements
 
 -   Docker
 -   Docker Compose
--   Go 1.22+
+-   Go 1.26+
 
 Run:
 
@@ -253,12 +254,12 @@ Services started:
 
 # Repository Structure
 
-    cmd/
-        api/
     internal/
-        payments/
+        util/
+        handler/
+        payment/
         ledger/
-        accounts/
+        account/
         idempotency/
     pkg/
         events/

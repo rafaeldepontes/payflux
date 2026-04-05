@@ -37,13 +37,20 @@ services:
     ports:
       - "6379:6379"
 
-  golang-project:
-    container_name: "my-project"
+  opentelemetry:
+    image: otel/opentelemetry-collector-dev:latest
+    ports:
+      - "4317:4317"
+      - "55680:55680"
+
+  ledger-app:
+    container_name: "ledger-app"
     build:
       context: ./
       dockerfile: Dockerfile
-    image: golang-project
+    image: ledger-app
     depends_on:
+      - opentelemetry
       - rabbitmq
       - postgres
     deploy:
