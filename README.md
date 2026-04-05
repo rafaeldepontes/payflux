@@ -1,4 +1,4 @@
-# Payment Ledger & Orchestrator
+# Golang - Payment Ledger & Orchestrator
 
 Project built with [Gini](https://gini-webserver.up.railway.app/)
 
