@@ -32,7 +32,7 @@ func (c controller) ProcessPayment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check cache looking for the key. (48h for TLS)
+	// Check cache looking for the key. (48h for TTL)
 	paymentID, err := c.service.CheckKey(idempotencyKey)
 	if err == nil {
 		w.WriteHeader(204)

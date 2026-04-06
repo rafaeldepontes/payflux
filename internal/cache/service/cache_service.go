@@ -19,8 +19,8 @@ func (r redis) Add(key string, value string) {
 	panic("unimplemented")
 }
 
-// AddWithTLS implements [cache.Cache].
-func (r redis) AddWithTLS(key string, value string, time *time.Duration) {
+// AddWithTTL implements [cache.Cache].
+func (r redis) AddWithTTL(key string, value string, time *time.Duration) {
 	panic("unimplemented")
 }
 

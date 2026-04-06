@@ -11,11 +11,11 @@ type Cache[K comparable, T any] interface {
 	// Add adds something to cache for 48 hours.
 	Add(key K, value T)
 
-	// Add adds something to cache, with no TLS were specified it will use the
+	// Add adds something to cache, with no TTL were specified it will use the
 	// default value of 48 hours.
-	AddWithTLS(key K, value T, time *time.Duration)
+	AddWithTTL(key K, value T, time *time.Duration)
 
-	// Set updates the cache value and also refresh the TLS, if the TLS were
+	// Set updates the cache value and also refresh the TTL, if the TTL were
 	// expired then it removes the old value and create a new one...
 	Set(key K, value T)
 
