@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 
+	"github.com/google/uuid"
 	"github.com/rafaeldepontes/goplo/internal/cache"
 	"github.com/rafaeldepontes/goplo/internal/payment"
 
@@ -15,6 +16,7 @@ type service struct {
 	repository payment.Repository
 }
 
+// NewService returns a new instance of the payment service.
 func NewService() payment.Service {
 	return service{
 		cache:      cs.NewService(),
@@ -22,11 +24,21 @@ func NewService() payment.Service {
 	}
 }
 
-// TODO: finish the logic behind the double ledger payment process
-func (s service) ProcessPayment() (string, error) {
-	return "", nil
+// ProcessPayment generates a unique payment ID and stores it in the cache with the idempotency key.
+func (s service) ProcessPayment(key string) (string, error) {
+	paymentID := uuid.New().String()
+
+	// TODO: we will also save to the repository here.
+	// _, err := s.repository.ProcessPayment(nil)
+	// if err != nil {
+	// 	return "", err
+	// }
+
+	s.cache.Add(key, paymentID)
+	return paymentID, nil
 }
 
+// CheckKey checks if the idempotency key is already in the cache.
 func (s service) CheckKey(key string) (string, error) {
 	val, has := s.cache.Get(key)
 	if !has {
