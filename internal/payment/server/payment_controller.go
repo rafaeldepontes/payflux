@@ -44,7 +44,7 @@ func (c controller) ProcessPayment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	paymentID, err = c.service.ProcessPayment()
+	paymentID, err = c.service.ProcessPayment(idempotencyKey)
 	if err != nil {
 		util.HandleError(w, err.Error(), http.StatusBadRequest)
 		return

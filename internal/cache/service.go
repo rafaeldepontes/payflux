@@ -4,8 +4,8 @@ import "time"
 
 const DefaultDuration = 24
 
-// Cache implements a internal cache system, every method is not case sensitive
-// to avoid case miss... So "A" and "a" gives the same value.
+// Cache implements a internal cache system, every method IS CASE SENSITIVE...
+// So "A" and "a" gives different results.
 type Cache[K comparable, T any] interface {
 
 	// Add adds something to cache for 48 hours.
@@ -13,7 +13,7 @@ type Cache[K comparable, T any] interface {
 
 	// Add adds something to cache, with no TTL were specified it will use the
 	// default value of 48 hours.
-	AddWithTTL(key K, value T, time *time.Duration)
+	AddWithTTL(time time.Duration, key K, value ...T)
 
 	// Set updates the cache value and also refresh the TTL, if the TTL were
 	// expired then it removes the old value and create a new one...
