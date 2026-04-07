@@ -1,50 +1,74 @@
 package service
 
 import (
+	"context"
 	"time"
 
 	"github.com/rafaeldepontes/goplo/internal/cache"
+	cr "github.com/rafaeldepontes/goplo/pkg/cache"
+	"github.com/redis/go-redis/v9"
 )
 
-type redis struct {
+const (
+	_                = iota
+	DefaultCacheTime = iota + 47
+)
+
+type cacheSvc struct {
+	db *redis.Client
 }
 
-// TODO: impl Redis logic and connection.
+// NewService returns a new instance of the cache service.
 func NewService() cache.Cache[string, string] {
-	return redis{}
+	return cacheSvc{
+		db: cr.GetCache(),
+	}
 }
 
-// Add implements [cache.Cache].
-func (r redis) Add(key string, value string) {
-	panic("unimplemented")
+// Add adds something to cache for 48 hours.
+func (r cacheSvc) Add(key string, value string) {
+	r.AddWithTTL(time.Duration(DefaultCacheTime*time.Hour), key, value)
 }
 
-// AddWithTTL implements [cache.Cache].
-func (r redis) AddWithTTL(key string, value string, time *time.Duration) {
-	panic("unimplemented")
+// AddWithTTL adds something to cache with a specified TTL.
+// If multiple values are provided, only the first one is used for simple KV storage.
+func (r cacheSvc) AddWithTTL(t time.Duration, key string, value ...string) {
+	if len(value) == 0 {
+		return
+	}
+	ctx := context.Background()
+	r.db.Set(ctx, key, value[0], t)
 }
 
-// Clear implements [cache.Cache].
-func (r redis) Clear() {
-	panic("unimplemented")
+// Clear clears the current database.
+func (r cacheSvc) Clear() {
+	ctx := context.Background()
+	r.db.FlushDB(ctx)
 }
 
-// FullClear implements [cache.Cache].
-func (r redis) FullClear() {
-	panic("unimplemented")
+// FullClear clears all databases.
+func (r cacheSvc) FullClear() {
+	ctx := context.Background()
+	r.db.FlushAll(ctx)
 }
 
-// Get implements [cache.Cache].
-func (r redis) Get(key string) (string, bool) {
-	panic("unimplemented")
+// Get gets the value if any and also returns a boolean to check if it exists.
+func (r cacheSvc) Get(key string) (string, bool) {
+	ctx := context.Background()
+	val, err := r.db.Get(ctx, key).Result()
+	if err != nil {
+		return "", false
+	}
+	return val, true
 }
 
-// Remove implements [cache.Cache].
-func (r redis) Remove(key string) {
-	panic("unimplemented")
+// Remove removes the value from cache.
+func (r cacheSvc) Remove(key string) {
+	ctx := context.Background()
+	r.db.Del(ctx, key)
 }
 
-// Set implements [cache.Cache].
-func (r redis) Set(key string, value string) {
-	panic("unimplemented")
+// Set updates the cache value and also refreshes the TTL.
+func (r cacheSvc) Set(key string, value string) {
+	r.Add(key, value)
 }
