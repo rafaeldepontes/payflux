@@ -18,14 +18,14 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: "postgres"
+      POSTGRES_DB: "fintech"
       POSTGRES_USER: "user"
       POSTGRES_PASSWORD: "pass"
     deploy:
       mode: replicated
       replicas: 1
     volumes:
-      - postgres:/var/lib/postgresql/data
+      - postgres:/var/lib/postgresql
 
   redis-compose:
     image: redis
