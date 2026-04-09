@@ -47,6 +47,9 @@ func (s service) ProcessPayment(key string, payment model.PaymentReq) (model.Pay
 		return model.PaymentRes{}, errors.New("something went wrong")
 	}
 
+	// TODO: implement rabbitmq producer for analytics...
+	// ...
+
 	res := model.PaymentRes{
 		ID:     p.ID.String(),
 		Status: p.Status,
