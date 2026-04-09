@@ -32,9 +32,15 @@ func (s *svc) ProcessEvent(event model.PaymentEvent) error {
 	settlement, err := s.repo.GetSettlementRecord(paymentID)
 	if err == sql.ErrNoRows {
 		log.Printf("[WARN] Missing settlement record for transaction: %s", event.PaymentID)
-		return s.repo.CreateException(model.Exception{
+		_ = s.repo.CreateException(model.Exception{
 			TransactionID:    paymentID,
 			Type:             "MissingSettlementRecord",
+			LedgerAmount:     event.Amount,
+			SettlementAmount: 0,
+		})
+		return s.repo.CreateReconciliationResult(model.ReconciliationResult{
+			TransactionID:    paymentID,
+			Status:           "missing_settlement",
 			LedgerAmount:     event.Amount,
 			SettlementAmount: 0,
 		})
