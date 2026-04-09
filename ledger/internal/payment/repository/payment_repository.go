@@ -26,9 +26,20 @@ func (r repo) ProcessPayment(p model.Payment, key, currency string) error {
 	}
 	defer tx.Rollback()
 
+	const lockAccounts = `
+	SELECT id FROM accounts
+	WHERE id = $1 OR id = $2
+	FOR UPDATE
+	`
+
+	_, err = tx.Exec(lockAccounts, p.FromAccount, p.ToAccount)
+	if err != nil {
+		return err
+	}
+
 	const paymentQuery = `
-	INSERT INTO payments 
-	(id, idempotency_key, from_account_id, to_account_id, amount, currency, status) 
+	INSERT INTO payments
+	(id, idempotency_key, from_account_id, to_account_id, amount, currency, status)
 	VALUES ($1, $2, $3, $4, $5, $6, $7)
 	`
 	_, err = tx.Exec(paymentQuery, p.ID, key, p.FromAccount, p.ToAccount, p.Amount, currency, p.Status)
