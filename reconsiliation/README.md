@@ -146,6 +146,22 @@ Response
 
 ------------------------------------------------------------------------
 
+## Create Settlement Record
+
+    POST /settlements
+
+Request
+
+``` json
+{
+  "transaction_id": "tx_1001",
+  "amount": 100,
+  "status": "Settled"
+}
+```
+
+------------------------------------------------------------------------
+
 ## Get Risk Evaluation
 
     GET /risk/{transaction_id}
