@@ -70,7 +70,7 @@ func RunMigrations() error {
 	db := GetDb()
 
 	driver, err := postgres.WithInstance(db, &postgres.Config{
-		MigrationsTable: "ledger_schema_migrations",
+		MigrationsTable: "reconciliation_schema_migrations",
 	})
 	if err != nil {
 		return fmt.Errorf("could not create migrate driver: %v", err)
