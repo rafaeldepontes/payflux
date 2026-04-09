@@ -1,11 +1,11 @@
 # PayFlux - Fintech Payment & Reconciliation System
 
-PayFlux is a production-style fintech backend demonstration consisting of two microservices written in Go. It simulates a complete payment lifecycle: from request and idempotent processing to double-entry accounting, event-driven risk analysis, and transaction reconciliation.
+PayFlux is a production-style fintech backend demonstration consisting of microservices written in Go and React frontend. It simulates a complete payment lifecycle: from request and idempotent processing to double-entry accounting, event-driven risk analysis, and transaction reconciliation.
 
 ## High-Level Architecture
 
 ```text
-            Client
+            Client (React Frontend)
               |
               v
       +-------+-------+
@@ -22,16 +22,14 @@ PayFlux is a production-style fintech backend demonstration consisting of two mi
       | Reconciliation| <--- (API: Risk Scores, Exceptions)
       |  & Risk Svc   |
       +-------+-------+
-              |
-              | (Postgres: Reconciliation & Risk Tables)
-              | (External: Settlement Records)
 ```
 
 ## Getting Started
 
 ### Prerequisites
 - Docker & Docker Compose
-- Go 1.26+ (for local development)
+- Node.js
+- Go
 
 ### Running the System
 Run the entire stack using the root `docker-compose.yml`:
@@ -41,6 +39,7 @@ docker compose up --build
 ```
 
 This will start:
+- **Frontend App** (`:3000`)
 - **Ledger API** (`:8080`)
 - **Reconciliation API** (`:8081`)
 - **PostgreSQL** (Shared database with isolated schemas)
@@ -51,80 +50,38 @@ This will start:
 
 ## Service Breakdown
 
-### 1. Ledger Service
-The core engine for moving money.
-- **Double-Entry Accounting:** Every payment creates a debit and a credit entry, ensuring `Total Debits = Total Credits`.
-- **Idempotency:** Requires an `Idempotency-Key` header to prevent duplicate charges.
-- **Event Producer:** Emits `PaymentCompleted` and `PaymentRefunded` events to RabbitMQ.
+### 1. Frontend (React + TypeScript + Vite)
+- A modern dashboard to interact with all backend features.
+- Create payments, check status, and view balances.
+- Styled with Tailwind CSS.
 
-### 2. Reconciliation & Risk Service
+### 2. Ledger Service (Go)
+The core engine for moving money.
+- **Double-Entry Accounting:** Ensures `Total Debits = Total Credits`.
+- **Idempotency:** Prevents duplicate charges via `Idempotency-Key`.
+
+### 3. Reconciliation & Risk Service (Go)
 The watchdog for financial integrity.
-- **Event Consumer:** Listens to ledger events.
-- **Risk Engine:** Evaluates transactions against rules (e.g., `LargeTransactionRule`).
-- **Reconciliation:** Compares internal ledger events with external "Settlement Records" (simulating bank statements).
+- **Risk Engine:** Automated rule evaluation for every transaction.
+- **Reconciliation:** Matches internal events with external settlement records.
 
 ---
 
 ## Database Architecture (PostgreSQL)
 
-The services share a Postgres instance but use unique migration tables to manage their schemas:
-
-### Ledger Schema
-- `accounts`: Stores user and merchant wallet info.
-- `payments`: Tracks the state of payment requests.
-- `ledger_entries`: The immutable audit log of all money movements.
-
-### Reconciliation Schema
-- `settlement_records`: External data to be matched against our ledger.
-- `reconciliation_results`: Stores the outcome (Matched/Mismatched) of comparisons.
-- `risk_evaluations`: Stores risk scores and flags for each transaction.
-- `exceptions`: Log of any discrepancies found.
+The services share a Postgres instance but use unique migration tables:
+- `ledger_schema_migrations`: Tracks ledger-specific tables (`accounts`, `payments`, `ledger_entries`).
+- `reconciliation_schema_migrations`: Tracks reconciliation tables (`settlement_records`, `reconciliation_results`, `risk_evaluations`, `exceptions`).
 
 ---
 
 ## Example Use Flow
 
-### 1. Create a Payment
-Send a request to the Ledger service.
-```bash
-curl -X POST http://localhost:8080/payments \
-  -H "Idempotency-Key: unique-key-12345" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from_account": 1,
-    "to_account": 2,
-    "amount": 500,
-    "currency": "USD"
-  }'
-```
-
-### 2. Simulate External Settlement
-The Reconciliation service needs "External" data to match. Use the helper endpoint:
-```bash
-curl -X POST http://localhost:8081/settlements \
-  -H "Content-Type: application/json" \
-  -d '{
-    "transaction_id": "PASTE_PAYMENT_ID_HERE",
-    "amount": 500,
-    "status": "Settled"
-  }'
-```
-
-### 3. Check Reconciliation & Risk
-Verify how the system processed the event:
-```bash
-# Check Reconciliation Result
-curl http://localhost:8081/reconciliation/PASTE_PAYMENT_ID_HERE
-
-# Check Risk Score
-curl http://localhost:8081/risk/PASTE_PAYMENT_ID_HERE
-```
-
-### 4. Check Balance
-Verify the money moved correctly in the ledger:
-```bash
-curl http://localhost:8080/accounts/1/balance
-```
+1. **Access the Frontend:** Open `http://localhost:3000`.
+2. **Create a Payment:** Fill the "Create Payment" form and click "Send".
+3. **Simulate Settlement:** After a successful payment, click "Simulate Settlement" to create the external record.
+4. **Verify:** Use the "Check Transaction" section to see the Reconciliation (should be `matched`) and Risk Score.
+5. **Check Balance:** Enter the Account ID (1 or 2) in the "Account Balance" section to see the updated funds.
 
 ## License
 MIT

@@ -47,7 +47,7 @@ services:
   ledger-app:
     container_name: "ledger-app"
     build:
-      context: /ledger
+      context: /backend/ledger
       dockerfile: Dockerfile
     image: ledger-app
     depends_on:
@@ -58,21 +58,21 @@ services:
       mode: replicated
       replicas: 1
     env_file:
-      - /ledger/.env
+      - /backend/ledger/.env
     ports:
       - "8080:8080"
 
   reconsiliation-api:
     container_name: "reconsiliation-api"
     build:
-      context: ./reconsiliation
+      context: ./backend/reconsiliation
       dockerfile: Dockerfile
     image: reconsiliation-app
     depends_on:
       - postgres
       - rabbitmq
     env_file:
-      - /reconsiliation/.env
+      - /backend/reconsiliation/.env
     ports:
       - "8081:8080"
     entrypoint: ["/reconsiliation-api"]
@@ -80,14 +80,14 @@ services:
   reconsiliation-consumer:
     container_name: "reconsiliation-consumer"
     build:
-      context: ./reconsiliation
+      context: ./backend/reconsiliation
       dockerfile: Dockerfile
     image: reconsiliation-app
     depends_on:
       - postgres
       - rabbitmq
     env_file:
-      - /reconsiliation/.env
+      - /backend/reconsiliation/.env
     entrypoint: ["/reconsiliation-consumer"]
 
   frontend-app:
