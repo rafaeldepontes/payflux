@@ -8,3 +8,8 @@ type Account struct {
 	Currency  string    `json:"currency"`
 	CreatedAt time.Time `json:"created_at"`
 }
+
+type BalanceRes struct {
+	AccountID int   `json:"account_id"`
+	Balance   int64 `json:"balance"`
+}

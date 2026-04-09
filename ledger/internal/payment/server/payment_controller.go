@@ -44,11 +44,55 @@ func (c controller) ProcessPayment(w http.ResponseWriter, r *http.Request) {
 
 	var payment pm.PaymentReq
 	if err := json.NewDecoder(r.Body).Decode(&payment); err != nil {
-		util.HandleError(w, "somehow I've coded poorly", http.StatusInternalServerError)
+		util.HandleError(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
 
 	res, err := c.service.ProcessPayment(idempotencyKey, payment)
+	if err != nil {
+		util.HandleError(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(res)
+}
+
+func (c controller) GetPayment(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	if id == "" {
+		util.HandleError(w, "missing payment id", http.StatusBadRequest)
+		return
+	}
+
+	res, err := c.service.GetPayment(id)
+	if err != nil {
+		util.HandleError(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(res)
+}
+
+func (c controller) RefundPayment(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	if id == "" {
+		util.HandleError(w, "missing payment id", http.StatusBadRequest)
+		return
+	}
+
+	var req pm.RefundReq
+	if r.ContentLength > 0 {
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			util.HandleError(w, "invalid request body", http.StatusBadRequest)
+			return
+		}
+	}
+
+	res, err := c.service.RefundPayment(id, req)
 	if err != nil {
 		util.HandleError(w, err.Error(), http.StatusBadRequest)
 		return

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/rafaeldepontes/goplo/internal/cache"
@@ -12,10 +13,12 @@ import (
 	cs "github.com/rafaeldepontes/goplo/internal/cache/service"
 	"github.com/rafaeldepontes/goplo/internal/payment/model"
 	pr "github.com/rafaeldepontes/goplo/internal/payment/repository"
+	"github.com/rafaeldepontes/goplo/pkg/message-broker/rabbitmq"
 )
 
 const (
 	CompletedStatus = "completed"
+	RefundedStatus  = "refunded"
 )
 
 type service struct {
@@ -49,12 +52,23 @@ func (s service) ProcessPayment(key string, payment model.PaymentReq) (model.Pay
 		return model.PaymentRes{}, errors.New("something went wrong")
 	}
 
-	// TODO: implement rabbitmq producer for analytics...
-	// ...
+	event := model.PaymentEvent{
+		EventType: "PaymentCompleted",
+		PaymentID: p.ID.String(),
+		Amount:    p.Amount,
+		Currency:  p.Currency,
+		Timestamp: time.Now(),
+	}
+	eventBody, _ := json.Marshal(event)
+	if err := rabbitmq.Publish(eventBody); err != nil {
+		log.Println("[WARN] could not publish event:", err)
+	}
 
 	res := model.PaymentRes{
-		ID:     p.ID.String(),
-		Status: p.Status,
+		ID:       p.ID.String(),
+		Status:   p.Status,
+		Amount:   p.Amount,
+		Currency: p.Currency,
 	}
 
 	body, _ := json.Marshal(res)
@@ -72,4 +86,69 @@ func (s service) CheckKey(key string) (model.PaymentRes, error) {
 	var res model.PaymentRes
 	err := json.Unmarshal([]byte(val), &res)
 	return res, err
+}
+
+// GetPayment retrieves a payment by its ID.
+func (s service) GetPayment(id string) (model.PaymentRes, error) {
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		return model.PaymentRes{}, errors.New("invalid id")
+	}
+
+	p, err := s.repository.GetPaymentByID(uid)
+	if err != nil {
+		return model.PaymentRes{}, errors.New("payment not found")
+	}
+
+	return model.PaymentRes{
+		ID:       p.ID.String(),
+		Status:   p.Status,
+		Amount:   p.Amount,
+		Currency: p.Currency,
+	}, nil
+}
+
+// RefundPayment processes a refund for a given payment.
+func (s service) RefundPayment(id string, req model.RefundReq) (model.PaymentRes, error) {
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		return model.PaymentRes{}, errors.New("invalid id")
+	}
+
+	p, err := s.repository.GetPaymentByID(uid)
+	if err != nil {
+		return model.PaymentRes{}, errors.New("payment not found")
+	}
+
+	if p.Status == RefundedStatus {
+		return model.PaymentRes{}, errors.New("payment already refunded")
+	}
+
+	// For simplicity, we only allow full refund if amount matches or if no amount provided in req
+	if req.Amount > 0 && req.Amount != p.Amount {
+		return model.PaymentRes{}, errors.New("partial refund not supported yet")
+	}
+
+	err = s.repository.RefundPayment(p)
+	if err != nil {
+		return model.PaymentRes{}, errors.New("could not process refund")
+	}
+
+	// Emit event to rabbitmq
+	event := model.PaymentEvent{
+		EventType: "PaymentRefunded",
+		PaymentID: p.ID.String(),
+		Amount:    p.Amount,
+		Currency:  p.Currency,
+		Timestamp: time.Now(),
+	}
+	eventBody, _ := json.Marshal(event)
+	if err := rabbitmq.Publish(eventBody); err != nil {
+		log.Println("[WARN] could not publish refund event:", err)
+	}
+
+	return model.PaymentRes{
+		ID:     p.ID.String(),
+		Status: RefundedStatus,
+	}, nil
 }

@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 
+	"github.com/google/uuid"
 	"github.com/rafaeldepontes/goplo/internal/payment"
 	"github.com/rafaeldepontes/goplo/internal/payment/model"
 	"github.com/rafaeldepontes/goplo/pkg/db/postgres"
@@ -53,6 +54,52 @@ func (r repo) ProcessPayment(p model.Payment) error {
 	}
 
 	_, err = tx.Exec(ledgerQuery, p.ID, p.ToAccount, p.Amount, p.Currency)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+// GetPaymentByID implements [payment.Repository].
+func (r repo) GetPaymentByID(id uuid.UUID) (model.Payment, error) {
+	const query = `
+	SELECT id, idempotency_key, from_account_id, to_account_id, amount, currency, status, created_at
+	FROM payments
+	WHERE id = $1
+	`
+	var p model.Payment
+	err := r.db.QueryRow(query, id).Scan(
+		&p.ID, &p.IdempotencyKey, &p.FromAccount, &p.ToAccount, &p.Amount, &p.Currency, &p.Status, &p.CreatedAt,
+	)
+	return p, err
+}
+
+// RefundPayment implements [payment.Repository].
+func (r repo) RefundPayment(p model.Payment) error {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	const updatePayment = `
+	UPDATE payments
+	SET status = 'refunded'
+	WHERE id = $1
+	`
+	_, err = tx.Exec(updatePayment, p.ID)
+	if err != nil {
+		return err
+	}
+
+	const ledgerQuery = `INSERT INTO ledger_entries (payment_id, account_id, amount, currency) VALUES ($1, $2, $3, $4)`
+	_, err = tx.Exec(ledgerQuery, p.ID, p.FromAccount, p.Amount, p.Currency)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ledgerQuery, p.ID, p.ToAccount, -p.Amount, p.Currency)
 	if err != nil {
 		return err
 	}
