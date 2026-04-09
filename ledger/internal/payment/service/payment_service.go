@@ -1,14 +1,21 @@
 package service
 
 import (
+	"encoding/json"
 	"errors"
+	"log"
 
 	"github.com/google/uuid"
 	"github.com/rafaeldepontes/goplo/internal/cache"
 	"github.com/rafaeldepontes/goplo/internal/payment"
 
 	cs "github.com/rafaeldepontes/goplo/internal/cache/service"
+	"github.com/rafaeldepontes/goplo/internal/payment/model"
 	pr "github.com/rafaeldepontes/goplo/internal/payment/repository"
+)
+
+const (
+	CompletedStatus = "completed"
 )
 
 type service struct {
@@ -25,24 +32,39 @@ func NewService() payment.Service {
 }
 
 // ProcessPayment generates a unique payment ID and stores it in the cache with the idempotency key.
-func (s service) ProcessPayment(key string) (string, error) {
-	paymentID := uuid.New().String()
+func (s service) ProcessPayment(key string, payment model.PaymentReq) (model.PaymentRes, error) {
+	p := model.Payment{
+		ID:          uuid.New(),
+		ToAccount:   payment.ToAccount,
+		FromAccount: payment.FromAccount,
+		Amount:      payment.Amount,
+		Status:      CompletedStatus,
+	}
 
-	// TODO: we will also save to the repository here.
-	// _, err := s.repository.ProcessPayment(nil)
-	// if err != nil {
-	// 	return "", err
-	// }
+	err := s.repository.ProcessPayment(p, key, payment.Currency)
+	if err != nil {
+		log.Println("[ERROR] could not finish the payment:", err)
+		return model.PaymentRes{}, errors.New("something went wrong")
+	}
 
-	s.cache.Add(key, paymentID)
-	return paymentID, nil
+	res := model.PaymentRes{
+		ID:     p.ID.String(),
+		Status: p.Status,
+	}
+
+	body, _ := json.Marshal(res)
+	s.cache.Add(key, string(body))
+	return res, nil
 }
 
 // CheckKey checks if the idempotency key is already in the cache.
-func (s service) CheckKey(key string) (string, error) {
+func (s service) CheckKey(key string) (model.PaymentRes, error) {
 	val, has := s.cache.Get(key)
 	if !has {
-		return "", errors.New("not on cache")
+		return model.PaymentRes{}, errors.New("not on cache")
 	}
-	return val, nil
+
+	var res model.PaymentRes
+	err := json.Unmarshal([]byte(val), &res)
+	return res, err
 }

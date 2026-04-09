@@ -6,6 +6,7 @@ import (
 
 	"github.com/rafaeldepontes/goplo/internal/idempotency"
 	"github.com/rafaeldepontes/goplo/internal/payment"
+	pm "github.com/rafaeldepontes/goplo/internal/payment/model"
 	ps "github.com/rafaeldepontes/goplo/internal/payment/service"
 	"github.com/rafaeldepontes/goplo/internal/util"
 )
@@ -33,27 +34,27 @@ func (c controller) ProcessPayment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check cache looking for the key. (48h for TTL)
-	paymentID, err := c.service.CheckKey(idempotencyKey)
+	pres, err := c.service.CheckKey(idempotencyKey)
 	if err == nil {
-		w.WriteHeader(204)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{
-			"payment_id": paymentID,
-			"status":     "processed",
-		})
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(pres)
 		return
 	}
 
-	paymentID, err = c.service.ProcessPayment(idempotencyKey)
+	var payment pm.PaymentReq
+	if err := json.NewDecoder(r.Body).Decode(&payment); err != nil {
+		util.HandleError(w, "somehow I've coded poorly", http.StatusInternalServerError)
+		return
+	}
+
+	res, err := c.service.ProcessPayment(idempotencyKey, payment)
 	if err != nil {
 		util.HandleError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	w.WriteHeader(204)
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
-		"payment_id": paymentID,
-		"status":     "processed",
-	})
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(res)
 }

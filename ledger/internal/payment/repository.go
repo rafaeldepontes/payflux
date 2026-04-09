@@ -1,5 +1,7 @@
 package payment
 
+import "github.com/rafaeldepontes/goplo/internal/payment/model"
+
 type Repository interface {
-	ProcessPayment(any) (string, error)
+	ProcessPayment(p model.Payment, key, currency string) error
 }
