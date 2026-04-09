@@ -119,7 +119,7 @@ Response:
 ``` json
 {
   "payment_id": "pay_9f21ab",
-  "status": "processed"
+  "status": "completed"
 }
 ```
 
@@ -136,7 +136,7 @@ Response
 ``` json
 {
   "payment_id": "pay_9f21ab",
-  "status": "processed",
+  "status": "completed || refunded",
   "amount": 100,
   "currency": "USD"
 }
@@ -163,7 +163,7 @@ Response
 ``` json
 {
   "refund_id": "ref_88412",
-  "status": "processed"
+  "status": "completed"
 }
 ```
 
@@ -192,7 +192,6 @@ Each payment emits events to RabbitMQ.
 
 Example event:
 
-    PaymentCreated
     PaymentCompleted
     PaymentRefunded
 
@@ -254,20 +253,32 @@ Services started:
 
 # Repository Structure
 
-    internal/
-        util/
-        handler/
-        payment/
-        ledger/
-        account/
-        idempotency/
-    pkg/
-        events/
-        rabbitmq/
-        observability/
-    deploy/
-        docker/
-        docker-compose.yml
+```md
+internal/
+├── cache/
+│ └── service/
+├── util/
+├── handler/
+├── payment/
+│ ├── server/
+│ ├── service/
+│ ├── repository/
+│ └── model/
+├── ledger/
+│ └── model/
+├── account/
+│ └── model/
+└── idempotency/
+
+pkg/
+├── cache/
+├── message-broker/
+│ └── rabbitmq/
+├── db/
+│ └── postgres/
+│ └── migrations/
+└── observability/
+```
 
 ------------------------------------------------------------------------
 
