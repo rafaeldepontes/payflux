@@ -23,7 +23,7 @@ func NewHandler() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	// Routes
-	mux.HandleFunc("POST /payment", handler.PaymentC.ProcessPayment)
+	mux.HandleFunc("POST /payments", handler.PaymentC.ProcessPayment)
 
 	return mux
 }

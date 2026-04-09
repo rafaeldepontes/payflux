@@ -6,8 +6,8 @@ import (
 )
 
 func HandleError(w http.ResponseWriter, msg string, code int) {
-	w.WriteHeader(code)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(map[string]string{
 		"message": msg,
 	})
