@@ -34,14 +34,16 @@ func NewService() payment.Service {
 // ProcessPayment generates a unique payment ID and stores it in the cache with the idempotency key.
 func (s service) ProcessPayment(key string, payment model.PaymentReq) (model.PaymentRes, error) {
 	p := model.Payment{
-		ID:          uuid.New(),
-		ToAccount:   payment.ToAccount,
-		FromAccount: payment.FromAccount,
-		Amount:      payment.Amount,
-		Status:      CompletedStatus,
+		ID:             uuid.New(),
+		IdempotencyKey: key,
+		FromAccount:    payment.FromAccount,
+		ToAccount:      payment.ToAccount,
+		Amount:         payment.Amount,
+		Status:         CompletedStatus,
+		Currency:       payment.Currency,
 	}
 
-	err := s.repository.ProcessPayment(p, key, payment.Currency)
+	err := s.repository.ProcessPayment(p)
 	if err != nil {
 		log.Println("[ERROR] could not finish the payment:", err)
 		return model.PaymentRes{}, errors.New("something went wrong")

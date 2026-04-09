@@ -19,7 +19,7 @@ func NewRepository() payment.Repository {
 }
 
 // ProcessPayment implements [payment.Repository].
-func (r repo) ProcessPayment(p model.Payment, key, currency string) error {
+func (r repo) ProcessPayment(p model.Payment) error {
 	tx, err := r.db.Begin()
 	if err != nil {
 		return err
@@ -41,18 +41,18 @@ func (r repo) ProcessPayment(p model.Payment, key, currency string) error {
 	(id, idempotency_key, from_account_id, to_account_id, amount, currency, status)
 	VALUES ($1, $2, $3, $4, $5, $6, $7)
 	`
-	_, err = tx.Exec(paymentQuery, p.ID, key, p.FromAccount, p.ToAccount, p.Amount, currency, p.Status)
+	_, err = tx.Exec(paymentQuery, p.ID, p.IdempotencyKey, p.FromAccount, p.ToAccount, p.Amount, p.Currency, p.Status)
 	if err != nil {
 		return err
 	}
 
 	const ledgerQuery = `INSERT INTO ledger_entries (payment_id, account_id, amount, currency) VALUES ($1, $2, $3, $4)`
-	_, err = tx.Exec(ledgerQuery, p.ID, p.FromAccount, -p.Amount, currency)
+	_, err = tx.Exec(ledgerQuery, p.ID, p.FromAccount, -p.Amount, p.Currency)
 	if err != nil {
 		return err
 	}
 
-	_, err = tx.Exec(ledgerQuery, p.ID, p.ToAccount, p.Amount, currency)
+	_, err = tx.Exec(ledgerQuery, p.ID, p.ToAccount, p.Amount, p.Currency)
 	if err != nil {
 		return err
 	}
