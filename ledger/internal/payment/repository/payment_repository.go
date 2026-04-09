@@ -31,7 +31,6 @@ func (r repo) ProcessPayment(p model.Payment, key, currency string) error {
 	WHERE id = $1 OR id = $2
 	FOR UPDATE
 	`
-
 	_, err = tx.Exec(lockAccounts, p.FromAccount, p.ToAccount)
 	if err != nil {
 		return err
