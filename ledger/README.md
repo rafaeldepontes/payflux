@@ -103,12 +103,12 @@ Creates a new payment transaction.
 
 Request:
 
-> Headers: ... | Idempotency-Key: "abc-123" | ....
+> Headers: ... | Idempotency-Key: "abc-123 (length 16)" | ....
 
 ``` json
 {
-  "from_account": "user_wallet",
-  "to_account": "merchant_wallet",
+  "from_account": "user_id",
+  "to_account": "merchant_id",
   "amount": 100,
   "currency": "USD",
 }
@@ -118,8 +118,10 @@ Response:
 
 ``` json
 {
-  "payment_id": "pay_9f21ab",
-  "status": "completed"
+    "payment_id": "123456...",
+    "status": "completed",
+    "amount": 100,
+    "currency": "USD"
 }
 ```
 
