@@ -1,21 +1,22 @@
 FROM golang:1.26-alpine AS build
 
-WORKDIR /cmd
+WORKDIR /app
 
 COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o /app .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o /reconsiliation-api ./cmd/api/main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o /reconsiliation-consumer ./cmd/consumer/main.go
 
-# SWEET LITTLE BINARY
 FROM gcr.io/distroless/static-debian12
 
 WORKDIR /
 
-COPY --from=build /app /app
+COPY --from=build /reconsiliation-api /reconsiliation-api
+COPY --from=build /reconsiliation-consumer /reconsiliation-consumer
 
 USER nonroot:nonroot
 
-ENTRYPOINT ["/app"]
+ENTRYPOINT ["/reconsiliation-api"]
