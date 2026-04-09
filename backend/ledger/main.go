@@ -6,10 +6,10 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/rafaeldepontes/goplo/internal/handler"
-	"github.com/rafaeldepontes/goplo/pkg/cache"
-	"github.com/rafaeldepontes/goplo/pkg/db/postgres"
-	"github.com/rafaeldepontes/goplo/pkg/message-broker/rabbitmq"
+	"github.com/rafaeldepontes/ledger/internal/handler"
+	"github.com/rafaeldepontes/ledger/pkg/cache"
+	"github.com/rafaeldepontes/ledger/pkg/db/postgres"
+	"github.com/rafaeldepontes/ledger/pkg/message-broker/rabbitmq"
 )
 
 func init() {
@@ -33,6 +33,19 @@ func main() {
 
 	h := handler.NewHandler()
 
+	corsHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", os.Getenv("FRONTEND_URL"))
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Idempotency-Key")
+
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		h.ServeHTTP(w, r)
+	})
+
 	log.Println("Application running on localhost:" + port)
-	log.Fatalln(http.ListenAndServe(":"+port, h))
+	log.Fatalln(http.ListenAndServe(":"+port, corsHandler))
 }

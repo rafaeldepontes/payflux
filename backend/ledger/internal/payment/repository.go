@@ -2,7 +2,7 @@ package payment
 
 import (
 	"github.com/google/uuid"
-	"github.com/rafaeldepontes/goplo/internal/payment/model"
+	"github.com/rafaeldepontes/ledger/internal/payment/model"
 )
 
 type Repository interface {

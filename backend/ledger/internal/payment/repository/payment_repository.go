@@ -4,9 +4,9 @@ import (
 	"database/sql"
 
 	"github.com/google/uuid"
-	"github.com/rafaeldepontes/goplo/internal/payment"
-	"github.com/rafaeldepontes/goplo/internal/payment/model"
-	"github.com/rafaeldepontes/goplo/pkg/db/postgres"
+	"github.com/rafaeldepontes/ledger/internal/payment"
+	"github.com/rafaeldepontes/ledger/internal/payment/model"
+	"github.com/rafaeldepontes/ledger/pkg/db/postgres"
 )
 
 type repo struct {

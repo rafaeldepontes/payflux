@@ -1,9 +1,9 @@
 package service
 
 import (
-	"github.com/rafaeldepontes/goplo/internal/account"
-	"github.com/rafaeldepontes/goplo/internal/account/model"
-	ar "github.com/rafaeldepontes/goplo/internal/account/repository"
+	"github.com/rafaeldepontes/ledger/internal/account"
+	"github.com/rafaeldepontes/ledger/internal/account/model"
+	ar "github.com/rafaeldepontes/ledger/internal/account/repository"
 )
 
 type svc struct {

@@ -1,4 +1,4 @@
-module github.com/rafaeldepontes/goplo
+module github.com/rafaeldepontes/ledger
 
 go 1.26.0
 

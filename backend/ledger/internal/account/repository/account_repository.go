@@ -3,8 +3,8 @@ package repository
 import (
 	"database/sql"
 
-	"github.com/rafaeldepontes/goplo/internal/account"
-	"github.com/rafaeldepontes/goplo/pkg/db/postgres"
+	"github.com/rafaeldepontes/ledger/internal/account"
+	"github.com/rafaeldepontes/ledger/pkg/db/postgres"
 )
 
 type repo struct {

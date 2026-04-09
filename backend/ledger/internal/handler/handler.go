@@ -3,10 +3,10 @@ package handler
 import (
 	"net/http"
 
-	"github.com/rafaeldepontes/goplo/internal/account"
-	as "github.com/rafaeldepontes/goplo/internal/account/server"
-	"github.com/rafaeldepontes/goplo/internal/payment"
-	ps "github.com/rafaeldepontes/goplo/internal/payment/server"
+	"github.com/rafaeldepontes/ledger/internal/account"
+	as "github.com/rafaeldepontes/ledger/internal/account/server"
+	"github.com/rafaeldepontes/ledger/internal/payment"
+	ps "github.com/rafaeldepontes/ledger/internal/payment/server"
 )
 
 type Handler struct {

@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/rafaeldepontes/goplo/internal/cache"
-	cr "github.com/rafaeldepontes/goplo/pkg/cache"
+	"github.com/rafaeldepontes/ledger/internal/cache"
+	cr "github.com/rafaeldepontes/ledger/pkg/cache"
 	"github.com/redis/go-redis/v9"
 )
 

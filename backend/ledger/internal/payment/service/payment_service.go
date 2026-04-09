@@ -7,13 +7,13 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/rafaeldepontes/goplo/internal/cache"
-	"github.com/rafaeldepontes/goplo/internal/payment"
+	"github.com/rafaeldepontes/ledger/internal/cache"
+	"github.com/rafaeldepontes/ledger/internal/payment"
 
-	cs "github.com/rafaeldepontes/goplo/internal/cache/service"
-	"github.com/rafaeldepontes/goplo/internal/payment/model"
-	pr "github.com/rafaeldepontes/goplo/internal/payment/repository"
-	"github.com/rafaeldepontes/goplo/pkg/message-broker/rabbitmq"
+	cs "github.com/rafaeldepontes/ledger/internal/cache/service"
+	"github.com/rafaeldepontes/ledger/internal/payment/model"
+	pr "github.com/rafaeldepontes/ledger/internal/payment/repository"
+	"github.com/rafaeldepontes/ledger/pkg/message-broker/rabbitmq"
 )
 
 const (

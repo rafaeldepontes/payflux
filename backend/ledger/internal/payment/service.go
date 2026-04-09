@@ -1,6 +1,6 @@
 package payment
 
-import "github.com/rafaeldepontes/goplo/internal/payment/model"
+import "github.com/rafaeldepontes/ledger/internal/payment/model"
 
 type Service interface {
 	ProcessPayment(key string, payment model.PaymentReq) (model.PaymentRes, error)

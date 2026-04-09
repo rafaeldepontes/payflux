@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/rafaeldepontes/goplo/internal/idempotency"
-	"github.com/rafaeldepontes/goplo/internal/payment"
-	pm "github.com/rafaeldepontes/goplo/internal/payment/model"
-	ps "github.com/rafaeldepontes/goplo/internal/payment/service"
-	"github.com/rafaeldepontes/goplo/internal/util"
+	"github.com/rafaeldepontes/ledger/internal/idempotency"
+	"github.com/rafaeldepontes/ledger/internal/payment"
+	pm "github.com/rafaeldepontes/ledger/internal/payment/model"
+	ps "github.com/rafaeldepontes/ledger/internal/payment/service"
+	"github.com/rafaeldepontes/ledger/internal/util"
 )
 
 type controller struct {

@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/rafaeldepontes/goplo/internal/account"
-	as "github.com/rafaeldepontes/goplo/internal/account/service"
-	"github.com/rafaeldepontes/goplo/internal/util"
+	"github.com/rafaeldepontes/ledger/internal/account"
+	as "github.com/rafaeldepontes/ledger/internal/account/service"
+	"github.com/rafaeldepontes/ledger/internal/util"
 )
 
 type controller struct {
