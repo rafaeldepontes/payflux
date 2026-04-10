@@ -42,9 +42,25 @@ This will start:
 - **Frontend App** (`:3000`)
 - **Ledger API** (`:8080`)
 - **Reconciliation API** (`:8081`)
+- **Prometheus** (`:9090`) - Metrics dashboard
+- **OpenTelemetry Collector** (`:4317`, `:4318`) - Trace collection
 - **PostgreSQL** (Shared database with isolated schemas)
 - **RabbitMQ** (Message Broker)
 - **Redis** (Cache/Idempotency)
+
+---
+
+## Observability & Documentation
+
+### Metrics & Traces
+- **Prometheus UI:** `http://localhost:9090`
+- **Ledger Metrics:** `http://localhost:8080/metrics`
+- **Reconciliation Metrics:** `http://localhost:8081/metrics`
+- **Tracing:** Exported via OTLP to the OpenTelemetry Collector.
+
+### API Documentation (Swagger)
+- **Ledger API Docs:** `http://localhost:8080/swagger/`
+- **Reconciliation API Docs:** `http://localhost:8081/swagger/`
 
 ---
 
