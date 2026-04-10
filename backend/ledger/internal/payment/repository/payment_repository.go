@@ -7,6 +7,7 @@ import (
 	"github.com/rafaeldepontes/ledger/internal/payment"
 	"github.com/rafaeldepontes/ledger/internal/payment/model"
 	"github.com/rafaeldepontes/ledger/pkg/db/postgres"
+	"github.com/rafaeldepontes/ledger/pkg/observability"
 )
 
 type repo struct {
@@ -104,5 +105,9 @@ func (r repo) RefundPayment(p model.Payment) error {
 		return err
 	}
 
-	return tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	observability.LedgerTransactionsTotal.Inc()
+	return nil
 }

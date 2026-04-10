@@ -14,6 +14,7 @@ import (
 	"github.com/rafaeldepontes/ledger/internal/payment/model"
 	pr "github.com/rafaeldepontes/ledger/internal/payment/repository"
 	"github.com/rafaeldepontes/ledger/pkg/message-broker/rabbitmq"
+	"github.com/rafaeldepontes/ledger/pkg/observability"
 )
 
 const (
@@ -48,6 +49,7 @@ func (s service) ProcessPayment(key string, payment model.PaymentReq) (model.Pay
 
 	err := s.repository.ProcessPayment(p)
 	if err != nil {
+		observability.PaymentFailuresTotal.Inc()
 		log.Println("[ERROR] could not finish the payment:", err)
 		return model.PaymentRes{}, errors.New("something went wrong")
 	}
