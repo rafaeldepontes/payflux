@@ -7,8 +7,8 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o /reconsiliation-api ./cmd/api/main.go
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o /reconsiliation-consumer ./cmd/consumer/main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags='-s -w' -v -o /reconsiliation-api ./cmd/api/main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags='-s -w' -v -o /reconsiliation-consumer ./cmd/consumer/main.go
 
 FROM gcr.io/distroless/static-debian12
 
