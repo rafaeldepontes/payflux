@@ -9,6 +9,7 @@ import (
 	"github.com/rafaeldepontes/reconsiliation/internal/reconciliation"
 	"github.com/rafaeldepontes/reconsiliation/internal/reconciliation/model"
 	rr "github.com/rafaeldepontes/reconsiliation/internal/reconciliation/repository"
+	"github.com/rafaeldepontes/reconsiliation/pkg/observability"
 )
 
 type svc struct {
@@ -22,10 +23,12 @@ func NewService() reconciliation.Service {
 }
 
 func (s *svc) ProcessEvent(event model.PaymentEvent) error {
+	observability.ReconciliationProcessedTotal.Inc()
 	log.Printf("[INFO] Reconciling transaction: %s", event.PaymentID)
 
 	paymentID, err := uuid.Parse(event.PaymentID)
 	if err != nil {
+		observability.ReconciliationFailuresTotal.Inc()
 		return err
 	}
 
