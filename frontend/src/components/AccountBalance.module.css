@@ -57,10 +57,52 @@
   margin-bottom: 0.25rem;
 }
 
-.balanceAmount {
+.balanceBoxPositive {
+  background-color: #ecfdf5;
+  border: 1px solid #d1fae5;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.balanceBoxNegative {
+  background-color: #fef2f2;
+  border: 1px solid #fee2e2;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.balanceLabelPositive {
+  color: #059669;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.balanceLabelNegative {
+  color: #dc2626;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.amountPositive {
   font-size: 2.25rem;
   font-weight: 700;
   color: #064e3b;
+}
+
+.amountNegative {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #991b1b;
 }
 
 .divider {

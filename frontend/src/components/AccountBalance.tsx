@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { Wallet, CheckCircle2 } from 'lucide-react';
+import { Wallet, CheckCircle2, AlertCircle } from 'lucide-react';
 import type { BalanceRes, PaymentRes } from '../types';
 import styles from './AccountBalance.module.css';
 
@@ -42,15 +42,18 @@ export const AccountBalance = ({ lastPayment }: Props) => {
     }
   };
 
+  const isNegative = balance ? balance.balance < 0 : false;
+
   return (
     <div className={styles.card}>
       <h2 className={styles.title}>
-        <Wallet className="w-5 h-5 text-emerald-500" />
+        <Wallet className={`w-5 h-5 ${isNegative ? 'text-red-500' : 'text-emerald-500'}`} />
         Account Balance
       </h2>
+
       <div className={styles.inputGroup}>
-        <input 
-          type="number" 
+        <input
+          type="number"
           value={balanceAccountId}
           onChange={e => setBalanceAccountId(e.target.value)}
           placeholder="Account ID"
@@ -60,11 +63,21 @@ export const AccountBalance = ({ lastPayment }: Props) => {
           Check
         </button>
       </div>
-      
+
       {balance && (
-        <div className={styles.balanceBox}>
-          <p className={styles.balanceLabel}>Current Balance</p>
-          <p className={styles.balanceAmount}>${balance.balance}</p>
+        <div className={isNegative ? styles.balanceBoxNegative : styles.balanceBoxPositive}>
+          <p className={isNegative ? styles.balanceLabelNegative : styles.balanceLabelPositive}>
+            {isNegative ? 'Account Overdrawn' : 'Current Balance'}
+          </p>
+          <p className={isNegative ? styles.amountNegative : styles.amountPositive}>
+            {isNegative ? `- $${Math.abs(balance.balance)}` : `$${balance.balance}`}
+          </p>
+          {isNegative && (
+            <div className="flex items-center justify-center gap-1 mt-2 text-red-600 text-xs font-bold">
+              <AlertCircle size={12} />
+              Action Required
+            </div>
+          )}
         </div>
       )}
 
@@ -72,7 +85,7 @@ export const AccountBalance = ({ lastPayment }: Props) => {
 
       <div className="mt-4">
         <h3 className={styles.helperTitle}>Quick Helpers</h3>
-        <button 
+        <button
           onClick={createSettlement}
           disabled={!lastPayment || loading}
           className={styles.simulateButton}
