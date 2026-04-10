@@ -3,10 +3,13 @@ package handler
 import (
 	"net/http"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	_ "github.com/rafaeldepontes/ledger/docs"
 	"github.com/rafaeldepontes/ledger/internal/account"
 	as "github.com/rafaeldepontes/ledger/internal/account/server"
 	"github.com/rafaeldepontes/ledger/internal/payment"
 	ps "github.com/rafaeldepontes/ledger/internal/payment/server"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type Handler struct {
@@ -33,6 +36,12 @@ func NewHandler() *http.ServeMux {
 
 	// Account Routes
 	mux.HandleFunc("GET /accounts/{id}/balance", handler.AccountC.GetAccountBalance)
+
+	// Observability
+	mux.Handle("/metrics", promhttp.Handler())
+
+	// Swagger
+	mux.Handle("/swagger/", httpSwagger.WrapHandler)
 
 	return mux
 }

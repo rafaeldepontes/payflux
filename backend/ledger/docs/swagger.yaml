@@ -1,0 +1,78 @@
+basePath: /
+definitions:
+  model.BalanceRes:
+    properties:
+      account_id:
+        type: integer
+      balance:
+        type: integer
+    type: object
+  model.PaymentRes:
+    properties:
+      amount:
+        type: integer
+      currency:
+        type: string
+      payment_id:
+        type: string
+      status:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: A production-style fintech backend service for payment processing.
+  title: Payment Ledger API
+  version: "1.0"
+paths:
+  /accounts/{id}/balance:
+    get:
+      description: Returns the computed balance for a specific account
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.BalanceRes'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get account balance
+      tags:
+      - accounts
+  /payments/{id}:
+    get:
+      description: Returns information about a specific payment
+      parameters:
+      - description: Payment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.PaymentRes'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get payment details
+      tags:
+      - payments
+swagger: "2.0"

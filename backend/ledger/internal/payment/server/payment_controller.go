@@ -21,6 +21,18 @@ func NewController() payment.Controller {
 	}
 }
 
+// ProcessPayment godoc
+// @Summary Process a payment
+// @Description Creates and processes a new payment
+// @Tags payments
+// @Accept json
+// @Produce json
+// @Param Idempotency-Key header string true "Idempotency key (required for safe retries)"
+// @Param request body pm.PaymentReq true "Payment request"
+// @Success 200 {object} model.PaymentRes
+// @Failure 400 {object} map[string]string
+// @Failure 409 {object} map[string]string
+// @Router /payments [post]
 func (c controller) ProcessPayment(w http.ResponseWriter, r *http.Request) {
 	idempotencyKey := r.Header.Get("Idempotency-Key")
 	if idempotencyKey == "" {
@@ -59,6 +71,15 @@ func (c controller) ProcessPayment(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(res)
 }
 
+// GetPayment godoc
+// @Summary Get payment details
+// @Description Returns information about a specific payment
+// @Tags payments
+// @Produce  json
+// @Param id path string true "Payment ID"
+// @Success 200 {object} model.PaymentRes
+// @Failure 404 {object} map[string]string
+// @Router /payments/{id} [get]
 func (c controller) GetPayment(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	if id == "" {
@@ -77,6 +98,18 @@ func (c controller) GetPayment(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(res)
 }
 
+// RefundPayment godoc
+// @Summary Refund a payment
+// @Description Processes a refund for a given payment
+// @Tags payments
+// @Accept json
+// @Produce json
+// @Param id path string true "Payment ID"
+// @Param request body pm.RefundReq true "Refund request"
+// @Success 200 {object} model.PaymentRes
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /payments/{id}/refund [post]
 func (c controller) RefundPayment(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	if id == "" {

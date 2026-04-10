@@ -20,6 +20,15 @@ func NewController() account.Controller {
 	}
 }
 
+// GetAccountBalance godoc
+// @Summary Get account balance
+// @Description Returns the computed balance for a specific account
+// @Tags accounts
+// @Produce  json
+// @Param id path int true "Account ID"
+// @Success 200 {object} model.BalanceRes
+// @Failure 400 {object} map[string]string
+// @Router /accounts/{id}/balance [get]
 func (c controller) GetAccountBalance(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	if idStr == "" {
