@@ -1,0 +1,11 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'ledger-app'
+    static_configs:
+      - targets: ['ledger-app:8080']
+
+  - job_name: 'reconsiliation-api'
+    static_configs:
+      - targets: ['reconsiliation-api:8080']
