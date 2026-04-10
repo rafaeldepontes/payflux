@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -37,6 +38,10 @@ func NewService() payment.Service {
 
 // ProcessPayment generates a unique payment ID and stores it in the cache with the idempotency key.
 func (s service) ProcessPayment(key string, payment model.PaymentReq) (model.PaymentRes, error) {
+	if err := validatePaymentRequest(payment); err != nil {
+		return model.PaymentRes{}, err
+	}
+
 	p := model.Payment{
 		ID:             uuid.New(),
 		IdempotencyKey: key,
@@ -80,6 +85,10 @@ func (s service) ProcessPayment(key string, payment model.PaymentReq) (model.Pay
 
 // CheckKey checks if the idempotency key is already in the cache.
 func (s service) CheckKey(key string) (model.PaymentRes, error) {
+	if key == "" {
+		return model.PaymentRes{}, errors.New("not on cache")
+	}
+
 	val, has := s.cache.Get(key)
 	if !has {
 		return model.PaymentRes{}, errors.New("not on cache")
@@ -153,4 +162,24 @@ func (s service) RefundPayment(id string, req model.RefundReq) (model.PaymentRes
 		ID:     p.ID.String(),
 		Status: RefundedStatus,
 	}, nil
+}
+
+func validatePaymentRequest(p model.PaymentReq) error {
+	if p.FromAccount <= 0 {
+		return errors.New("source account is required")
+	}
+
+	if p.ToAccount <= 0 {
+		return errors.New("destination account is required")
+	}
+
+	if p.Amount <= 0 {
+		return errors.New("amount needs to be greater than zero")
+	}
+
+	if strings.TrimSpace(p.Currency) == "" {
+		return errors.New("currency is required")
+	}
+
+	return nil
 }
