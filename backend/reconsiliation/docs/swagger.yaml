@@ -1,0 +1,77 @@
+basePath: /
+definitions:
+  model.RiskEvaluation:
+    properties:
+      created_at:
+        type: string
+      flags:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      risk_score:
+        type: integer
+      transaction_id:
+        type: string
+    type: object
+host: localhost:8081
+info:
+  contact: {}
+  description: A production-style fintech backend service for transaction reconciliation
+    and risk analysis.
+  title: Reconciliation & Risk API
+  version: "1.0"
+paths:
+  /risk/{transaction_id}:
+    get:
+      description: Returns the risk score and flags for a specific transaction
+      parameters:
+      - description: Transaction ID
+        in: path
+        name: transaction_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.RiskEvaluation'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get risk evaluation
+      tags:
+      - risk
+  /settlements:
+    post:
+      consumes:
+      - application/json
+      description: Creates or updates a settlement record for matching
+      parameters:
+      - description: Settlement Record
+        in: body
+        name: settlement
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a settlement record
+      tags:
+      - reconciliation
+swagger: "2.0"

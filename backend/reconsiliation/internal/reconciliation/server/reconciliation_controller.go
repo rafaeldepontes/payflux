@@ -19,6 +19,15 @@ func NewController() reconciliation.Controller {
 	}
 }
 
+// GetReconciliationResult godoc
+// @Summary Get reconciliation result
+// @Description Returns the reconciliation result for a transaction
+// @Tags reconciliation
+// @Produce json
+// @Param transaction_id path string true "Transaction ID"
+// @Success 200 {object} model.ReconciliationResult
+// @Failure 404 {object} map[string]string
+// @Router /reconciliation/{transaction_id} [get]
 func (c *controller) GetReconciliationResult(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("transaction_id")
 	res, err := c.service.GetResult(id)
@@ -40,6 +49,16 @@ func (c *controller) ListExceptions(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(res)
 }
 
+// CreateSettlementRecord godoc
+// @Summary Create a settlement record
+// @Description Creates or updates a settlement record for matching
+// @Tags reconciliation
+// @Accept  json
+// @Produce  json
+// @Param settlement body object true "Settlement Record"
+// @Success 201
+// @Failure 400 {object} map[string]string
+// @Router /settlements [post]
 func (c *controller) CreateSettlementRecord(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		TransactionID string `json:"transaction_id"`

@@ -3,10 +3,13 @@ package handler
 import (
 	"net/http"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	_ "github.com/rafaeldepontes/reconsiliation/docs"
 	"github.com/rafaeldepontes/reconsiliation/internal/reconciliation"
 	rs "github.com/rafaeldepontes/reconsiliation/internal/reconciliation/server"
 	"github.com/rafaeldepontes/reconsiliation/internal/risk"
 	risks "github.com/rafaeldepontes/reconsiliation/internal/risk/server"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type Handler struct {
@@ -30,6 +33,12 @@ func NewHandler() *http.ServeMux {
 	mux.HandleFunc("POST /settlements", handler.ReconciliationC.CreateSettlementRecord)
 
 	mux.HandleFunc("GET /risk/{transaction_id}", handler.RiskC.GetRiskEvaluation)
+
+	// Observability
+	mux.Handle("/metrics", promhttp.Handler())
+
+	// Swagger
+	mux.Handle("/swagger/", httpSwagger.WrapHandler)
 
 	return mux
 }

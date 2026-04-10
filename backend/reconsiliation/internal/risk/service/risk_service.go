@@ -9,6 +9,7 @@ import (
 	"github.com/rafaeldepontes/reconsiliation/internal/risk"
 	"github.com/rafaeldepontes/reconsiliation/internal/risk/model"
 	rr "github.com/rafaeldepontes/reconsiliation/internal/risk/repository"
+	"github.com/rafaeldepontes/reconsiliation/pkg/observability"
 )
 
 type svc struct {
@@ -35,6 +36,7 @@ func (s *svc) ProcessEvent(event reconciliation_model.PaymentEvent) error {
 	if event.Amount > 10000 {
 		score += 50
 		flags = append(flags, "LargeTransactionRule")
+		observability.RiskFlagsTotal.Inc()
 	}
 
 	return s.repo.CreateRiskEvaluation(model.RiskEvaluation{
