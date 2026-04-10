@@ -47,9 +47,9 @@ export const TransactionChecker = ({ initialId = '' }: Props) => {
         Check Transaction
       </h2>
       <div className={styles.inputGroup}>
-        <input 
-          type="text" 
-          placeholder="Payment ID" 
+        <input
+          type="text"
+          placeholder="Payment ID"
           value={searchId}
           onChange={e => setSearchId(e.target.value)}
           className={styles.input}
@@ -67,7 +67,7 @@ export const TransactionChecker = ({ initialId = '' }: Props) => {
             </span>
             {reconResult ? (
               <span className={`${styles.badge} ${reconResult.status === 'matched' ? styles.badgeMatched : styles.badgePending}`}>
-                {reconResult.status}
+                {reconResult.status === 'matched' ? 'Matched' : 'Missing Settlement'}
               </span>
             ) : <span className="text-xs text-slate-400">No data</span>}
           </div>
