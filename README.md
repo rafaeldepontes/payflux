@@ -2,6 +2,10 @@
 
 PayFlux is a production-style fintech backend demonstration consisting of microservices written in Go and React frontend. It simulates a complete payment lifecycle: from request and idempotent processing to double-entry accounting, event-driven risk analysis, and transaction reconciliation.
 
+## Demonstration
+
+![Watch the video](public/thumb.png)(https://raw.githubusercontent.com/rafaeldepontes/payflux/main/public/payflux-demo.mp4)
+
 ## High-Level Architecture
 
 ```text
