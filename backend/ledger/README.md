@@ -288,7 +288,13 @@ pkg/
 
 The service exposes:
 
-Metrics
+## Documentation (Swagger)
+
+    /swagger/
+
+Interact with the API endpoints via the Swagger UI.
+
+## Metrics
 
     /metrics
 
