@@ -285,6 +285,14 @@ Services started:
 
 Metrics exposed:
 
+## Documentation (Swagger)
+
+    /swagger/
+
+Interact with the API endpoints via the Swagger UI.
+
+## Metrics
+
     /metrics
 
 Prometheus metrics examples:
