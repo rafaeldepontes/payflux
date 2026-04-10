@@ -4,7 +4,8 @@ PayFlux is a production-style fintech backend demonstration consisting of micros
 
 ## Demonstration
 
-![Watch the video](public/thumb.png)(https://github.com/user-attachments/assets/dafe8f53-bb9d-439f-a1e6-a1079704e671)
+<video src="https://github.com/user-attachments/assets/f536de12-4e44-414b-af5c-54794579818f" controls="controls" style="max-width: 100%;">
+</video>
 
 ## High-Level Architecture
 
