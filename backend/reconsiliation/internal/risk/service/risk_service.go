@@ -8,7 +8,6 @@ import (
 	reconciliation_model "github.com/rafaeldepontes/reconsiliation/internal/reconciliation/model"
 	"github.com/rafaeldepontes/reconsiliation/internal/risk"
 	"github.com/rafaeldepontes/reconsiliation/internal/risk/model"
-	rr "github.com/rafaeldepontes/reconsiliation/internal/risk/repository"
 	"github.com/rafaeldepontes/reconsiliation/pkg/observability"
 )
 
@@ -16,9 +15,9 @@ type svc struct {
 	repo risk.Repository
 }
 
-func NewService() risk.Service {
+func NewService(repo risk.Repository) risk.Service {
 	return &svc{
-		repo: rr.NewRepository(),
+		repo: repo,
 	}
 }
 

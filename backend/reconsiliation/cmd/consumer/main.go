@@ -10,7 +10,9 @@ import (
 
 	"github.com/joho/godotenv"
 	rm "github.com/rafaeldepontes/reconsiliation/internal/reconciliation/model"
+	rr "github.com/rafaeldepontes/reconsiliation/internal/reconciliation/repository"
 	rs "github.com/rafaeldepontes/reconsiliation/internal/reconciliation/service"
+	rk "github.com/rafaeldepontes/reconsiliation/internal/risk/repository"
 	risks "github.com/rafaeldepontes/reconsiliation/internal/risk/service"
 	"github.com/rafaeldepontes/reconsiliation/pkg/db/postgres"
 	"github.com/rafaeldepontes/reconsiliation/pkg/message-broker/rabbitmq"
@@ -36,8 +38,11 @@ func main() {
 		log.Fatalf("failed to run migrations: %v", err)
 	}
 
-	reconSvc := rs.NewService()
-	riskSvc := risks.NewService()
+	reconRepo := rr.NewRepository()
+	reconSvc := rs.NewService(reconRepo)
+
+	riskRepo := rk.NewRepository()
+	riskSvc := risks.NewService(riskRepo)
 
 	msgs := rabbitmq.GetConsumer()
 	if msgs == nil {

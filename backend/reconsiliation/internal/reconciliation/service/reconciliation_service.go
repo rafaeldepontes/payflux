@@ -8,7 +8,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rafaeldepontes/reconsiliation/internal/reconciliation"
 	"github.com/rafaeldepontes/reconsiliation/internal/reconciliation/model"
-	rr "github.com/rafaeldepontes/reconsiliation/internal/reconciliation/repository"
 	"github.com/rafaeldepontes/reconsiliation/pkg/observability"
 )
 
@@ -16,9 +15,9 @@ type svc struct {
 	repo reconciliation.Repository
 }
 
-func NewService() reconciliation.Service {
+func NewService(repo reconciliation.Repository) reconciliation.Service {
 	return &svc{
-		repo: rr.NewRepository(),
+		repo: repo,
 	}
 }
 

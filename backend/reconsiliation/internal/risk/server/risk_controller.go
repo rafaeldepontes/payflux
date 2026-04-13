@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/rafaeldepontes/reconsiliation/internal/risk"
-	rs "github.com/rafaeldepontes/reconsiliation/internal/risk/service"
 	"github.com/rafaeldepontes/reconsiliation/internal/util"
 )
 
@@ -13,9 +12,9 @@ type controller struct {
 	service risk.Service
 }
 
-func NewController() risk.Controller {
+func NewController(svc risk.Service) risk.Controller {
 	return &controller{
-		service: rs.NewService(),
+		service: svc,
 	}
 }
 

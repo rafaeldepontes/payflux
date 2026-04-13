@@ -8,6 +8,12 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/rafaeldepontes/reconsiliation/internal/handler"
+	rr "github.com/rafaeldepontes/reconsiliation/internal/reconciliation/repository"
+	rs "github.com/rafaeldepontes/reconsiliation/internal/reconciliation/server"
+	rsvc "github.com/rafaeldepontes/reconsiliation/internal/reconciliation/service"
+	rk "github.com/rafaeldepontes/reconsiliation/internal/risk/repository"
+	rks "github.com/rafaeldepontes/reconsiliation/internal/risk/server"
+	rksvc "github.com/rafaeldepontes/reconsiliation/internal/risk/service"
 	"github.com/rafaeldepontes/reconsiliation/pkg/db/postgres"
 	"github.com/rafaeldepontes/reconsiliation/pkg/observability"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -32,7 +38,15 @@ func main() {
 		defer tp.Shutdown(context.Background())
 	}
 
-	h := handler.NewHandler()
+	reconRepo := rr.NewRepository()
+	reconSvc := rsvc.NewService(reconRepo)
+	reconCtrl := rs.NewController(reconSvc)
+
+	riskRepo := rk.NewRepository()
+	riskSvc := rksvc.NewService(riskRepo)
+	riskCtrl := rks.NewController(riskSvc)
+
+	h := handler.NewHandler(reconCtrl, riskCtrl)
 
 	otelHandler := otelhttp.NewHandler(h, "reconsiliation-api")
 
