@@ -21,18 +21,24 @@ const (
 )
 
 var (
-	connOnce sync.Once
+	connOnce   sync.Once
 	connection *amqp.Connection
 
 	chanOnce sync.Once
-	channel    *amqp.Channel
+	channel  *amqp.Channel
 
 	queueOnce sync.Once
-	queue      *amqp.Queue
+	queue     *amqp.Queue
 
 	consOnce sync.Once
-	consumer   *<-chan amqp.Delivery
+	consumer *<-chan amqp.Delivery
 )
+
+type Broker struct{}
+
+func (b Broker) Publish(body []byte) error {
+	return Publish(body)
+}
 
 func GetConnection() *amqp.Connection {
 	connOnce.Do(func() {

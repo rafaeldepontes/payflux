@@ -7,7 +7,6 @@ import (
 	"github.com/rafaeldepontes/ledger/internal/idempotency"
 	"github.com/rafaeldepontes/ledger/internal/payment"
 	pm "github.com/rafaeldepontes/ledger/internal/payment/model"
-	ps "github.com/rafaeldepontes/ledger/internal/payment/service"
 	"github.com/rafaeldepontes/ledger/internal/util"
 )
 
@@ -15,9 +14,9 @@ type controller struct {
 	service payment.Service
 }
 
-func NewController() payment.Controller {
+func NewController(svc payment.Service) payment.Controller {
 	return &controller{
-		service: ps.NewService(),
+		service: svc,
 	}
 }
 

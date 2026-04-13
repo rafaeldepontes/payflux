@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/rafaeldepontes/ledger/internal/cache"
-	cr "github.com/rafaeldepontes/ledger/pkg/cache"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -19,9 +18,9 @@ type cacheSvc struct {
 }
 
 // NewService returns a new instance of the cache service.
-func NewService() cache.Cache[string, string] {
+func NewService(db *redis.Client) cache.Cache[string, string] {
 	return cacheSvc{
-		db: cr.GetCache(),
+		db: db,
 	}
 }
 

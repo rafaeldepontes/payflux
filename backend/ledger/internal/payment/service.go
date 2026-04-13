@@ -8,3 +8,7 @@ type Service interface {
 	GetPayment(id string) (model.PaymentRes, error)
 	RefundPayment(id string, req model.RefundReq) (model.PaymentRes, error)
 }
+
+type MessageBroker interface {
+	Publish(body []byte) error
+}

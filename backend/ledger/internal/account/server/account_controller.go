@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/rafaeldepontes/ledger/internal/account"
-	as "github.com/rafaeldepontes/ledger/internal/account/service"
 	"github.com/rafaeldepontes/ledger/internal/util"
 )
 
@@ -14,9 +13,9 @@ type controller struct {
 	service account.Service
 }
 
-func NewController() account.Controller {
+func NewController(svc account.Service) account.Controller {
 	return &controller{
-		service: as.NewService(),
+		service: svc,
 	}
 }
 

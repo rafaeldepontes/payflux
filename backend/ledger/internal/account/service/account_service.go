@@ -3,16 +3,15 @@ package service
 import (
 	"github.com/rafaeldepontes/ledger/internal/account"
 	"github.com/rafaeldepontes/ledger/internal/account/model"
-	ar "github.com/rafaeldepontes/ledger/internal/account/repository"
 )
 
 type svc struct {
 	repo account.Repository
 }
 
-func NewService() account.Service {
+func NewService(repo account.Repository) account.Service {
 	return svc{
-		repo: ar.NewRepository(),
+		repo: repo,
 	}
 }
 

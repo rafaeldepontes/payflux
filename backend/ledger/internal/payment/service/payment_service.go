@@ -11,10 +11,7 @@ import (
 	"github.com/rafaeldepontes/ledger/internal/cache"
 	"github.com/rafaeldepontes/ledger/internal/payment"
 
-	cs "github.com/rafaeldepontes/ledger/internal/cache/service"
 	"github.com/rafaeldepontes/ledger/internal/payment/model"
-	pr "github.com/rafaeldepontes/ledger/internal/payment/repository"
-	"github.com/rafaeldepontes/ledger/pkg/message-broker/rabbitmq"
 	"github.com/rafaeldepontes/ledger/pkg/observability"
 )
 
@@ -26,13 +23,15 @@ const (
 type service struct {
 	cache      cache.Cache[string, string]
 	repository payment.Repository
+	broker     payment.MessageBroker
 }
 
 // NewService returns a new instance of the payment service.
-func NewService() payment.Service {
+func NewService(repo payment.Repository, cache cache.Cache[string, string], broker payment.MessageBroker) payment.Service {
 	return service{
-		cache:      cs.NewService(),
-		repository: pr.NewRepository(),
+		cache:      cache,
+		repository: repo,
+		broker:     broker,
 	}
 }
 
@@ -67,7 +66,7 @@ func (s service) ProcessPayment(key string, payment model.PaymentReq) (model.Pay
 		Timestamp: time.Now(),
 	}
 	eventBody, _ := json.Marshal(event)
-	if err := rabbitmq.Publish(eventBody); err != nil {
+	if err := s.broker.Publish(eventBody); err != nil {
 		log.Println("[WARN] could not publish event:", err)
 	}
 
@@ -154,7 +153,7 @@ func (s service) RefundPayment(id string, req model.RefundReq) (model.PaymentRes
 		Timestamp: time.Now(),
 	}
 	eventBody, _ := json.Marshal(event)
-	if err := rabbitmq.Publish(eventBody); err != nil {
+	if err := s.broker.Publish(eventBody); err != nil {
 		log.Println("[WARN] could not publish refund event:", err)
 	}
 

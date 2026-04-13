@@ -6,7 +6,14 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
+	ar "github.com/rafaeldepontes/ledger/internal/account/repository"
+	as "github.com/rafaeldepontes/ledger/internal/account/server"
+	asvc "github.com/rafaeldepontes/ledger/internal/account/service"
+	cs "github.com/rafaeldepontes/ledger/internal/cache/service"
 	"github.com/rafaeldepontes/ledger/internal/handler"
+	pr "github.com/rafaeldepontes/ledger/internal/payment/repository"
+	ps "github.com/rafaeldepontes/ledger/internal/payment/server"
+	psvc "github.com/rafaeldepontes/ledger/internal/payment/service"
 	"github.com/rafaeldepontes/ledger/pkg/cache"
 	"github.com/rafaeldepontes/ledger/pkg/db/postgres"
 	"github.com/rafaeldepontes/ledger/pkg/message-broker/rabbitmq"
@@ -15,14 +22,6 @@ import (
 
 func init() {
 	_ = godotenv.Load(".env", ".env.example")
-	cache.GetCache()
-	postgres.GetDb()
-	rabbitmq.GetConnection()
-	rabbitmq.GetChannel()
-	rabbitmq.GetQueue()
-	if err := postgres.RunMigrations(); err != nil {
-		log.Fatalf("failed to run migrations: %v", err)
-	}
 }
 
 // @title Payment Ledger API
@@ -31,13 +30,34 @@ func init() {
 // @host localhost:8080
 // @BasePath /
 func main() {
-	defer cache.Close()
+	postgres.GetDb()
 	defer postgres.Close()
+
+	if err := postgres.RunMigrations(); err != nil {
+		log.Fatalf("failed to run migrations: %v", err)
+	}
+
+	redisClient := cache.GetCache()
+	defer cache.Close()
+
+	rabbitmq.GetConnection()
+	rabbitmq.GetChannel()
+	rabbitmq.GetQueue()
 	defer rabbitmq.Close()
+
+	accountRepo := ar.NewRepository()
+	accountSvc := asvc.NewService(accountRepo)
+	accountCtrl := as.NewController(accountSvc)
+
+	cacheSvc := cs.NewService(redisClient)
+	paymentRepo := pr.NewRepository()
+	broker := &rabbitmq.Broker{}
+	paymentSvc := psvc.NewService(paymentRepo, cacheSvc, broker)
+	paymentCtrl := ps.NewController(paymentSvc)
 
 	port := os.Getenv("API_PORT")
 
-	h := handler.NewHandler()
+	h := handler.NewHandler(paymentCtrl, accountCtrl)
 
 	otelHandler := otelhttp.NewHandler(h, "ledger-api")
 
