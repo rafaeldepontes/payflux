@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { ArrowRightLeft, History } from 'lucide-react';
 import { generateIdempotencyKey } from '../utils/helpers';
 import type { PaymentRes } from '../types';
@@ -8,16 +8,17 @@ import styles from './PaymentForm.module.css';
 const LEDGER_URL = import.meta.env.VITE_LEDGER_URL || 'http://localhost:8080';
 
 interface Props {
+  error: string,
+  setError: (err: string) => void;
   onPaymentCreated: (payment: PaymentRes) => void;
 }
 
-export const PaymentForm = ({ onPaymentCreated }: Props) => {
+export const PaymentForm = ({ error = '', setError, onPaymentCreated }: Props) => {
   const [fromAccount, setFromAccount] = useState('1');
   const [toAccount, setToAccount] = useState('2');
   const [amount, setAmount] = useState('100');
   const [idempotencyKey, setIdempotencyKey] = useState(generateIdempotencyKey());
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -32,7 +33,8 @@ export const PaymentForm = ({ onPaymentCreated }: Props) => {
         headers: { 'Idempotency-Key': idempotencyKey }
       });
       onPaymentCreated(res.data);
-    } catch (err: any) {
+    } catch (er) {
+      const err = er as AxiosError<{ message?: string }>;
       setError(err.response?.data?.message || 'Failed to create payment');
     } finally {
       setLoading(false);

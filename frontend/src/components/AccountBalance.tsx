@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { Wallet, CheckCircle2, AlertCircle } from 'lucide-react';
 import type { BalanceRes, PaymentRes } from '../types';
 import styles from './AccountBalance.module.css';
@@ -8,26 +8,30 @@ const LEDGER_URL = import.meta.env.VITE_LEDGER_URL || 'http://localhost:8080';
 const RECON_URL = import.meta.env.VITE_RECON_URL || 'http://localhost:8081';
 
 interface Props {
+  setError: (err: string) => void;
   lastPayment: PaymentRes | null;
 }
 
-export const AccountBalance = ({ lastPayment }: Props) => {
+export const AccountBalance = ({ setError, lastPayment }: Props) => {
   const [balanceAccountId, setBalanceAccountId] = useState('1');
   const [balance, setBalance] = useState<BalanceRes | null>(null);
   const [loading, setLoading] = useState(false);
 
   const checkBalance = async () => {
+    setError('');
     try {
       const res = await axios.get(`${LEDGER_URL}/accounts/${balanceAccountId}/balance`);
       setBalance(res.data);
     } catch (err) {
-      console.error(err);
+      const error = err as AxiosError<{ message?: string }>;
+      setError(error.response?.data?.message || 'Failed to create payment');
     }
   };
 
   const createSettlement = async () => {
     if (!lastPayment) return;
     setLoading(true);
+    setError('');
     try {
       await axios.post(`${RECON_URL}/settlements`, {
         transaction_id: lastPayment.payment_id,
@@ -36,7 +40,8 @@ export const AccountBalance = ({ lastPayment }: Props) => {
       });
       alert('Settlement record created!');
     } catch (err) {
-      console.error(err);
+      const error = err as AxiosError<{ message?: string }>;
+      setError(error.response?.data?.message || 'Failed to create payment');
     } finally {
       setLoading(false);
     }

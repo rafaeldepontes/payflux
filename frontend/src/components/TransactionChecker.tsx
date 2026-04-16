@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { Search, FileCheck, ShieldCheck } from 'lucide-react';
 import type { ReconciliationRes, RiskRes } from '../types';
 import styles from './TransactionChecker.module.css';
@@ -7,10 +7,11 @@ import styles from './TransactionChecker.module.css';
 const RECON_URL = import.meta.env.VITE_RECON_URL || 'http://localhost:8081';
 
 interface Props {
+  setError: (err: string) => void;
   initialId?: string;
 }
 
-export const TransactionChecker = ({ initialId = '' }: Props) => {
+export const TransactionChecker = ({ setError, initialId = '' }: Props) => {
   const [searchId, setSearchId] = useState(initialId);
   const [reconResult, setReconResult] = useState<ReconciliationRes | null>(null);
   const [riskResult, setRiskResult] = useState<RiskRes | null>(null);
@@ -26,6 +27,7 @@ export const TransactionChecker = ({ initialId = '' }: Props) => {
   const handleCheck = async (id: string) => {
     if (!id) return;
     setLoading(true);
+    setError('');
     try {
       const [recon, risk] = await Promise.all([
         axios.get(`${RECON_URL}/reconciliation/${id}`).catch(() => ({ data: null })),
@@ -34,7 +36,8 @@ export const TransactionChecker = ({ initialId = '' }: Props) => {
       setReconResult(recon.data);
       setRiskResult(risk.data);
     } catch (err) {
-      console.error(err);
+      const error = err as AxiosError<{ message?: string }>;
+      setError(error.response?.data?.message || 'Failed to create payment');
     } finally {
       setLoading(false);
     }
