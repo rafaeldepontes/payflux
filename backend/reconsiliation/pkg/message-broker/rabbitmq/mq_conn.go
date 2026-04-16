@@ -10,28 +10,49 @@ import (
 )
 
 const (
-	queueName   = "processes_queue"
-	consumerTag = ""
-	durable     = false
-	autoDelete  = false
-	exclusive   = false
-	noWait      = false
-	noLocal     = false
-	autoAck     = true
+	// Queues
+	DLQName   = "dead_letter_queue"
+	QueueName = "processes_queue"
+
+	// Exchanges
+	DLXExchange = "dlx_exchange"
+
+	// Tags
+	ConsumerTag    = ""
+	DLQConsumerTag = "dlq_consumer"
+
+	// Keys
+	DLXRoutingKey = "dlx_routing_key"
+
+	// Headers
+	DLXExchangeHeader   = "x-dead-letter-exchange"
+	DLXRoutingKeyHeader = "x-dead-letter-routing-key"
+
+	// Params
+	Kind       = "direct"
+	Durable    = true
+	AutoDelete = false
+	Exclusive  = false
+	NoWait     = false
+	NoLocal    = false
+	AutoAck    = false
 )
 
 var (
-	connOnce sync.Once
+	connOnce   sync.Once
 	connection *amqp.Connection
 
 	chanOnce sync.Once
-	channel    *amqp.Channel
+	channel  *amqp.Channel
 
 	queueOnce sync.Once
-	queue      *amqp.Queue
+	queue     *amqp.Queue
 
 	consOnce sync.Once
-	consumer   *<-chan amqp.Delivery
+	consumer *<-chan amqp.Delivery
+
+	dlqConsOnce sync.Once
+	dlqConsumer *<-chan amqp.Delivery
 )
 
 func GetConnection() *amqp.Connection {
@@ -72,6 +93,20 @@ func GetConsumer() *<-chan amqp.Delivery {
 	return consumer
 }
 
+func GetDLQConsumer() *<-chan amqp.Delivery {
+	dlqConsOnce.Do(func() {
+		ch := GetChannel()
+		if ch != nil {
+			if err := prepareDLQ(); err != nil {
+				fmt.Printf("error trying to prepare the DLQ\n[ERROR] %v\n", err)
+				return
+			}
+			openDLQConsumer()
+		}
+	})
+	return dlqConsumer
+}
+
 func Close() {
 	if channel != nil {
 		_ = channel.Close()
@@ -93,10 +128,10 @@ func Publish(body []byte) error {
 	}
 
 	return ch.Publish(
-		"",     // exchange
-		q.Name, // routing key
-		false,  // mandatory
-		false,  // immediate
+		"",
+		q.Name,
+		false,
+		false,
 		amqp.Publishing{
 			ContentType: "application/json",
 			Body:        body,
@@ -145,13 +180,22 @@ func openQueue() {
 	if channel == nil {
 		return
 	}
+
+	if err := prepareDLQ(); err != nil {
+		fmt.Printf("error trying to prepare the DLQ\n[ERROR] %v\n", err)
+		return
+	}
+
 	q, err := channel.QueueDeclare(
-		queueName,
-		durable,
-		autoDelete,
-		exclusive,
-		noWait,
-		amqp.Table{},
+		QueueName,
+		Durable,
+		AutoDelete,
+		Exclusive,
+		NoWait,
+		amqp.Table{
+			DLXExchangeHeader:   DLXExchange,
+			DLXRoutingKeyHeader: DLXRoutingKey,
+		},
 	)
 	if err != nil {
 		fmt.Printf("error trying to declare the queue\n[ERROR] %v\n", err)
@@ -165,12 +209,12 @@ func openConsumer() {
 		return
 	}
 	msgs, err := channel.Consume(
-		queueName,
-		consumerTag,
-		autoAck,
-		exclusive,
-		noLocal,
-		noWait,
+		QueueName,
+		ConsumerTag,
+		AutoAck,
+		Exclusive,
+		NoLocal,
+		NoWait,
 		amqp.Table{},
 	)
 	if err != nil {
@@ -178,4 +222,60 @@ func openConsumer() {
 		return
 	}
 	consumer = &msgs
+}
+
+func openDLQConsumer() {
+	if channel == nil {
+		return
+	}
+	msgs, err := channel.Consume(
+		DLQName,
+		DLQConsumerTag,
+		AutoAck,
+		Exclusive,
+		NoLocal,
+		NoWait,
+		amqp.Table{},
+	)
+	if err != nil {
+		fmt.Printf("error trying to get the DLQ consumer\n[ERROR] %v\n", err)
+		return
+	}
+	dlqConsumer = &msgs
+}
+
+func prepareDLQ() error {
+	err := channel.ExchangeDeclare(
+		DLXExchange,
+		Kind,
+		Durable,
+		AutoDelete,
+		false,
+		NoWait,
+		nil,
+	)
+	if err != nil {
+		return err
+	}
+
+	qDLQ, err := channel.QueueDeclare(
+		DLQName,
+		Durable,
+		AutoDelete,
+		Exclusive,
+		NoWait,
+		nil,
+	)
+	if err != nil {
+		return err
+	}
+
+	err = channel.QueueBind(
+		qDLQ.Name,
+		DLXRoutingKey,
+		DLXExchange,
+		NoWait,
+		nil,
+	)
+	return err
 }

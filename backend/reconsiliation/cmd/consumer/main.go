@@ -2,22 +2,15 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/joho/godotenv"
-	rm "github.com/rafaeldepontes/reconsiliation/internal/reconciliation/model"
-	rr "github.com/rafaeldepontes/reconsiliation/internal/reconciliation/repository"
-	rs "github.com/rafaeldepontes/reconsiliation/internal/reconciliation/service"
-	rk "github.com/rafaeldepontes/reconsiliation/internal/risk/repository"
-	risks "github.com/rafaeldepontes/reconsiliation/internal/risk/service"
+	"github.com/rafaeldepontes/reconsiliation/internal/app"
 	"github.com/rafaeldepontes/reconsiliation/pkg/db/postgres"
-	"github.com/rafaeldepontes/reconsiliation/pkg/message-broker/rabbitmq"
 	"github.com/rafaeldepontes/reconsiliation/pkg/observability"
-	"go.opentelemetry.io/otel"
 )
 
 func init() {
@@ -38,42 +31,8 @@ func main() {
 		log.Fatalf("failed to run migrations: %v", err)
 	}
 
-	reconRepo := rr.NewRepository()
-	reconSvc := rs.NewService(reconRepo)
-
-	riskRepo := rk.NewRepository()
-	riskSvc := risks.NewService(riskRepo)
-
-	msgs := rabbitmq.GetConsumer()
-	if msgs == nil {
-		log.Fatal("could not get rabbitmq consumer")
-	}
-
-	tr := otel.Tracer("reconsiliation-consumer")
-
-	go func() {
-		for d := range *msgs {
-			_, span := tr.Start(context.Background(), "consume-event")
-
-			var event rm.PaymentEvent
-			if err := json.Unmarshal(d.Body, &event); err != nil {
-				log.Printf("[ERROR] failed to unmarshal event: %v", err)
-				span.End()
-				continue
-			}
-
-			log.Printf("[INFO] Received event: %s for payment: %s", event.EventType, event.PaymentID)
-
-			if err := reconSvc.ProcessEvent(event); err != nil {
-				log.Printf("[ERROR] reconciliation failed: %v", err)
-			}
-
-			if err := riskSvc.ProcessEvent(event); err != nil {
-				log.Printf("[ERROR] risk evaluation failed: %v", err)
-			}
-			span.End()
-		}
-	}()
+	app := app.New()
+	app.Run()
 
 	log.Println("Consumer started. Waiting for messages...")
 

@@ -10,14 +10,29 @@ import (
 )
 
 const (
-	queueName   = "processes_queue"
-	consumerTag = ""
-	durable     = false
-	autoDelete  = false
-	exclusive   = false
-	noWait      = false
-	noLocal     = false
-	autoAck     = true
+	// Queues
+	QueueName = "processes_queue"
+
+	// Exchanges
+	DLXExchange = "dlx_exchange"
+
+	// Tags
+	ConsumerTag = ""
+
+	// Keys
+	DLXRoutingKey = "dlx_routing_key"
+
+	// Headers
+	DLXExchangeHeader   = "x-dead-letter-exchange"
+	DLXRoutingKeyHeader = "x-dead-letter-routing-key"
+
+	// Params
+	Durable    = true
+	AutoDelete = false
+	Exclusive  = false
+	NoWait     = false
+	NoLocal    = false
+	AutoAck    = false
 )
 
 var (
@@ -152,12 +167,15 @@ func openQueue() {
 		return
 	}
 	q, err := channel.QueueDeclare(
-		queueName,
-		durable,
-		autoDelete,
-		exclusive,
-		noWait,
-		amqp.Table{},
+		QueueName,
+		Durable,
+		AutoDelete,
+		Exclusive,
+		NoWait,
+		amqp.Table{
+			DLXExchangeHeader:   DLXExchange,
+			DLXRoutingKeyHeader: DLXRoutingKey,
+		},
 	)
 	if err != nil {
 		fmt.Printf("error trying to declare the queue\n[ERROR] %v\n", err)
@@ -171,12 +189,12 @@ func openConsumer() {
 		return
 	}
 	msgs, err := channel.Consume(
-		queueName,
-		consumerTag,
-		autoAck,
-		exclusive,
-		noLocal,
-		noWait,
+		QueueName,
+		ConsumerTag,
+		AutoAck,
+		Exclusive,
+		NoLocal,
+		NoWait,
 		amqp.Table{},
 	)
 	if err != nil {
