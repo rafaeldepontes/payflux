@@ -11,6 +11,7 @@ import (
 	asvc "github.com/rafaeldepontes/ledger/internal/account/service"
 	cs "github.com/rafaeldepontes/ledger/internal/cache/service"
 	"github.com/rafaeldepontes/ledger/internal/handler"
+	"github.com/rafaeldepontes/ledger/internal/rate/limit"
 	pr "github.com/rafaeldepontes/ledger/internal/payment/repository"
 	ps "github.com/rafaeldepontes/ledger/internal/payment/server"
 	psvc "github.com/rafaeldepontes/ledger/internal/payment/service"
@@ -57,7 +58,8 @@ func main() {
 
 	port := os.Getenv("API_PORT")
 
-	h := handler.NewHandler(paymentCtrl, accountCtrl)
+	rateLimit := limit.NewMiddleware()
+	h := handler.NewHandler(paymentCtrl, accountCtrl, rateLimit)
 
 	otelHandler := otelhttp.NewHandler(h, "ledger-api")
 

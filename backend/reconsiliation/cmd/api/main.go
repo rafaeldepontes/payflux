@@ -8,6 +8,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/rafaeldepontes/reconsiliation/internal/handler"
+	"github.com/rafaeldepontes/reconsiliation/internal/rate/limit"
 	rr "github.com/rafaeldepontes/reconsiliation/internal/reconciliation/repository"
 	rs "github.com/rafaeldepontes/reconsiliation/internal/reconciliation/server"
 	rsvc "github.com/rafaeldepontes/reconsiliation/internal/reconciliation/service"
@@ -46,7 +47,8 @@ func main() {
 	riskSvc := rksvc.NewService(riskRepo)
 	riskCtrl := rks.NewController(riskSvc)
 
-	h := handler.NewHandler(reconCtrl, riskCtrl)
+	rt := limit.NewMiddleware()
+	h := handler.NewHandler(reconCtrl, riskCtrl, rt)
 
 	otelHandler := otelhttp.NewHandler(h, "reconsiliation-api")
 
