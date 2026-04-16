@@ -31,6 +31,7 @@ func NewController(svc payment.Service) payment.Controller {
 // @Success 200 {object} model.PaymentRes
 // @Failure 400 {object} map[string]string
 // @Failure 409 {object} map[string]string
+// @Failure 429 {object} map[string]string
 // @Router /payments [post]
 func (c controller) ProcessPayment(w http.ResponseWriter, r *http.Request) {
 	idempotencyKey := r.Header.Get("Idempotency-Key")
@@ -78,6 +79,7 @@ func (c controller) ProcessPayment(w http.ResponseWriter, r *http.Request) {
 // @Param id path string true "Payment ID"
 // @Success 200 {object} model.PaymentRes
 // @Failure 404 {object} map[string]string
+// @Failure 429 {object} map[string]string
 // @Router /payments/{id} [get]
 func (c controller) GetPayment(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
@@ -108,6 +110,7 @@ func (c controller) GetPayment(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} model.PaymentRes
 // @Failure 400 {object} map[string]string
 // @Failure 404 {object} map[string]string
+// @Failure 429 {object} map[string]string
 // @Router /payments/{id}/refund [post]
 func (c controller) RefundPayment(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")

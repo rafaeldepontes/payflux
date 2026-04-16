@@ -26,6 +26,7 @@ func NewController(svc risk.Service) risk.Controller {
 // @Param transaction_id path string true "Transaction ID"
 // @Success 200 {object} model.RiskEvaluation
 // @Failure 404 {object} map[string]string
+// @Failure 429 {object} map[string]string
 // @Router /risk/{transaction_id} [get]
 func (c *controller) GetRiskEvaluation(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("transaction_id")

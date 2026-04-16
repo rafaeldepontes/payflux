@@ -27,6 +27,7 @@ func NewController(svc account.Service) account.Controller {
 // @Param id path int true "Account ID"
 // @Success 200 {object} model.BalanceRes
 // @Failure 400 {object} map[string]string
+// @Failure 429 {object} map[string]string
 // @Router /accounts/{id}/balance [get]
 func (c controller) GetAccountBalance(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
