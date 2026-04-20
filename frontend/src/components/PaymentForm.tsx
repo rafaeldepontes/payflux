@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import axios, { AxiosError } from 'axios';
 import { ArrowRightLeft, History } from 'lucide-react';
-import { generateIdempotencyKey } from '../utils/helpers';
+import { formatWithCursor, generateIdempotencyKey, parseMoneyToCents } from '../utils/helpers';
 import type { PaymentRes } from '../types';
 import styles from './PaymentForm.module.css';
 
@@ -14,20 +14,39 @@ interface Props {
 }
 
 export const PaymentForm = ({ error = '', setError, onPaymentCreated }: Props) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const [fromAccount, setFromAccount] = useState('1');
   const [toAccount, setToAccount] = useState('2');
-  const [amount, setAmount] = useState('100');
+  const [amount, setAmount] = useState('0.00');
   const [idempotencyKey, setIdempotencyKey] = useState(generateIdempotencyKey());
   const [loading, setLoading] = useState(false);
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    const cursor = input.selectionStart || 0;
+
+    const { value, cursor: newCursor } = formatWithCursor(input.value, cursor);
+
+    setAmount(value);
+
+    // restore cursor AFTER render
+    requestAnimationFrame(() => {
+      if (inputRef.current) {
+        inputRef.current.setSelectionRange(newCursor, newCursor);
+      }
+    });
+  };
 
   const handleSubmit = async () => {
     setLoading(true);
     setError('');
+
     try {
       const res = await axios.post(`${LEDGER_URL}/payments`, {
         from_account: parseInt(fromAccount),
         to_account: parseInt(toAccount),
-        amount: parseInt(amount),
+        amount: parseMoneyToCents(amount),
         currency: 'USD'
       }, {
         headers: { 'Idempotency-Key': idempotencyKey }
@@ -58,7 +77,7 @@ export const PaymentForm = ({ error = '', setError, onPaymentCreated }: Props) =
         </div>
         <div className={styles.formGroup}>
           <label className={styles.label}>Amount</label>
-          <input type="number" value={amount} onChange={e => setAmount(e.target.value)} className={styles.input} />
+          <input ref={inputRef} type="text" value={amount} onChange={handleAmountChange} className={styles.input} />
         </div>
         <div className={styles.formGroup}>
           <label className={styles.label}>Idempotency Key</label>

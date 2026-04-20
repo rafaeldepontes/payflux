@@ -15,7 +15,7 @@ export const TransactionFooter = ({ payment }: Props) => {
         <p className={styles.txId}>ID: {payment.payment_id}</p>
       </div>
       <div>
-        <p className={styles.amount}>${payment.amount}</p>
+        <p className={styles.amount}>${payment.amount / 100}</p>
         <p className={styles.status}>{payment.status}</p>
       </div>
     </div>
