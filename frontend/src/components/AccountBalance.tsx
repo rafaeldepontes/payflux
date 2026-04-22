@@ -75,7 +75,7 @@ export const AccountBalance = ({ setError, lastPayment }: Props) => {
             {isNegative ? 'Account Overdrawn' : 'Current Balance'}
           </p>
           <p className={isNegative ? styles.amountNegative : styles.amountPositive}>
-            {isNegative ? `- $${Math.abs(balance.balance) / 100}` : `$${balance.balance / 100}`}
+            {isNegative ? `- $${(Math.abs(balance.balance) / 100).toFixed(2)}` : `$${(balance.balance / 100).toFixed(2)}`}
           </p>
           {isNegative && (
             <div className="flex items-center justify-center gap-1 mt-2 text-red-600 text-xs font-bold">

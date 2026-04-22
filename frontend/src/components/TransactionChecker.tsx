@@ -76,8 +76,8 @@ export const TransactionChecker = ({ setError, initialId = '' }: Props) => {
           </div>
           {reconResult && (
             <div className="text-sm">
-              <p>Ledger: <span className="font-mono font-bold">${reconResult.ledger_amount / 100}</span></p>
-              <p>Settlement: <span className="font-mono font-bold">${reconResult.settlement_amount / 100}</span></p>
+              <p>Ledger: <span className="font-mono font-bold">${(reconResult.ledger_amount / 100).toFixed(2)}</span></p>
+              <p>Settlement: <span className="font-mono font-bold">${(reconResult.settlement_amount / 100).toFixed(2)}</span></p>
             </div>
           )}
         </div>
