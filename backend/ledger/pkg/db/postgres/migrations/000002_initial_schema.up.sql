@@ -10,3 +10,6 @@ CREATE TABLE account_balance (
 
 CREATE INDEX idx_account_balance_account_id
 ON account_balance (account_id, created_at DESC);
+
+CREATE INDEX idx_account_balance_latest
+ON account_balance (account_id, version DESC);
