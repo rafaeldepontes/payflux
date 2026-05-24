@@ -18,7 +18,7 @@ type middleware struct {
 
 func NewMiddleware() Middleware {
 	return &middleware{
-		rl: rate.NewLimiter(1, 5),
+		rl: rate.NewLimiter(1, 10),
 	}
 }
 

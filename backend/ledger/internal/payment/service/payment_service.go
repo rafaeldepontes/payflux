@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/rafaeldepontes/ledger/internal/account"
 	"github.com/rafaeldepontes/ledger/internal/cache"
 	"github.com/rafaeldepontes/ledger/internal/payment"
 
@@ -24,14 +25,16 @@ type service struct {
 	cache      cache.Cache[string, string]
 	repository payment.Repository
 	broker     payment.MessageBroker
+	acc        account.Service
 }
 
 // NewService returns a new instance of the payment service.
-func NewService(repo payment.Repository, cache cache.Cache[string, string], broker payment.MessageBroker) payment.Service {
+func NewService(repo payment.Repository, cache cache.Cache[string, string], broker payment.MessageBroker, acc account.Service) payment.Service {
 	return service{
 		cache:      cache,
 		repository: repo,
 		broker:     broker,
+		acc:        acc,
 	}
 }
 
@@ -49,6 +52,16 @@ func (s service) ProcessPayment(key string, payment model.PaymentReq) (model.Pay
 		Amount:         payment.Amount,
 		Status:         CompletedStatus,
 		Currency:       payment.Currency,
+	}
+
+	if err := validateBalance(p, s.acc); err != nil {
+		if err.Error() == "not enough balance" {
+			return model.PaymentRes{}, err
+		}
+
+		observability.PaymentFailuresTotal.Inc()
+		log.Println("[ERROR] could not finish the payment:", err)
+		return model.PaymentRes{}, errors.New("something went wrong")
 	}
 
 	err := s.repository.ProcessPayment(p)
@@ -180,5 +193,17 @@ func validatePaymentRequest(p model.PaymentReq) error {
 		return errors.New("currency is required")
 	}
 
+	return nil
+}
+
+func validateBalance(p model.Payment, acc account.Service) error {
+	b, err := acc.GetAccountBalance(p.FromAccount)
+	if err != nil {
+		return err
+	}
+
+	if b.Balance < p.Amount {
+		return errors.New("not enough balance")
+	}
 	return nil
 }

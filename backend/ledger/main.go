@@ -11,10 +11,10 @@ import (
 	asvc "github.com/rafaeldepontes/ledger/internal/account/service"
 	cs "github.com/rafaeldepontes/ledger/internal/cache/service"
 	"github.com/rafaeldepontes/ledger/internal/handler"
-	"github.com/rafaeldepontes/ledger/internal/rate/limit"
 	pr "github.com/rafaeldepontes/ledger/internal/payment/repository"
 	ps "github.com/rafaeldepontes/ledger/internal/payment/server"
 	psvc "github.com/rafaeldepontes/ledger/internal/payment/service"
+	"github.com/rafaeldepontes/ledger/internal/rate/limit"
 	"github.com/rafaeldepontes/ledger/pkg/cache"
 	"github.com/rafaeldepontes/ledger/pkg/db/postgres"
 	"github.com/rafaeldepontes/ledger/pkg/message-broker/rabbitmq"
@@ -53,7 +53,7 @@ func main() {
 	cacheSvc := cs.NewService(redisClient)
 	paymentRepo := pr.NewRepository()
 	broker := &rabbitmq.Broker{}
-	paymentSvc := psvc.NewService(paymentRepo, cacheSvc, broker)
+	paymentSvc := psvc.NewService(paymentRepo, cacheSvc, broker, accountSvc)
 	paymentCtrl := ps.NewController(paymentSvc)
 
 	port := os.Getenv("API_PORT")

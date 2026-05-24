@@ -41,7 +41,7 @@ func (m *MockCache) AddWithTTL(t time.Duration, key string, value ...string) {
 	m.Called(t, key, value)
 }
 func (m *MockCache) Set(key string, value string) { m.Called(key, value) }
-func (m *MockCache) Remove(key string)           { m.Called(key) }
+func (m *MockCache) Remove(key string)            { m.Called(key) }
 func (m *MockCache) Get(key string) (string, bool) {
 	args := m.Called(key)
 	return args.String(0), args.Bool(1)
@@ -272,7 +272,7 @@ func TestRefundPayment(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockRepo := new(MockRepository)
 			mockBrk := new(MockBroker)
-			
+
 			if tt.name != "Invalid ID" {
 				mockRepo.On("GetPaymentByID", id).Return(tt.mockPayment, tt.mockGetErr)
 				if tt.name == "Success" {
